@@ -5,7 +5,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: greenbids/charts/tailor
+  CHART_NAMESPACE: greenbids/charts
+  CHART_NAME: tailor
   VERSION: 1.0.0
 
 jobs:
@@ -30,10 +31,10 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.CHART_NAMESPACE }}/${{ env.CHART_NAME }}
       - name: Helm chart Package and Push
         uses: WyriHaximus/github-action-helm3@v4
         with:
           exec: |
             helm package --version ${{ env.VERSION }} --app-version ${{ env.VERSION }} chart/ && \
-            helm push tailor-${{ env.VERSION }}.tgz oci://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            helm push ${{ env.CHART_NAME }}-${{ env.VERSION }}.tgz oci://${{ env.REGISTRY }}/${{ env.CHART_NAMESPACE }}
