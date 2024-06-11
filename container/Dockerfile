@@ -18,8 +18,9 @@ RUN python3 -m venv /home/greenbids/venv
 ENV VIRTUAL_ENV=/home/greenbids/venv
 ENV PATH="/home/greenbids/venv/bin:$PATH"
 
-RUN pip3 install --no-cache-dir wheel && \
-pip3 install --no-cache-dir greenbids-tailor[all]==${TAILOR_VERSION}
+RUN pip3 install --no-cache-dir wheel
+#Waiting to publish python package
+#RUN pip3 install --no-cache-dir greenbids-tailor[all]==${TAILOR_VERSION}
 
 ENV PORT=8080
 EXPOSE 8080
