@@ -1,0 +1,39 @@
+name: Create and publish a Helm Chart
+
+on:
+  push:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: greenbids/charts/tailor
+  VERSION: 1.0.0
+
+jobs:
+  build-and-publish-chart:
+    runs-on:
+      - gb-arc-staging
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Helm chart Package and Push
+        uses: WyriHaximus/github-action-helm3@v4
+        with:
+          exec: |
+            helm package --version ${{ env.VERSION }} --app-version ${{ env.VERSION }} chart/ && \
+            helm push tailor-${{ env.VERSION }}.tgz oci://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}

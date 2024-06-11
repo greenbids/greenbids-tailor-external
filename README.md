@@ -85,5 +85,5 @@ Depending on your current stack, find the best way to deploy this service.
 
 * Helm
   ```bash
-  helm install --create-namespace --namespace greenbids tailor oci://ghcr.io/greenbids/tailor
+  helm install --create-namespace --namespace greenbids tailor oci://ghcr.io/greenbids/charts/tailor
   ```
