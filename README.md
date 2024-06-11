@@ -23,7 +23,7 @@ sequenceDiagram
     SSP ->>+ GB: POST /tailor @buyers
     GB -->>- SSP: 200 @(filtered, isExploration)
     end
-    
+
     loop for each buyer in filtered
         SSP ->>+ buyer: 1. Bid Request
         alt 200
@@ -66,24 +66,24 @@ Below, you can find a detailed description of the routes provided by the Greenbi
     ```http
     GET /health
     ```
+
 ## 🚀 Deployment
+
 
 Depending on your current stack, find the best way to deploy this service.
 
 * Executable
   ```bash
   pip install greenbids-tailor
-  greenbids-tailor
+  greenbids-tailor --port 8080
   ```
 
 * Docker
   ```bash
-  docker run ghcr.io/greenbids/tailor:latest
+  docker run -P ghcr.io/greenbids/tailor:latest
   ```
 
 * Helm
   ```bash
-  helm repo add greenbids oci://ghcr.io/greenbids
-  helm install greenbids/tailor greenbids-tailor
+  helm install --create-namespace --namespace greenbids tailor oci://ghcr.io/greenbids/tailor
   ```
-
