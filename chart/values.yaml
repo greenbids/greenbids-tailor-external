@@ -57,7 +57,7 @@ resources:
 
 startupProbe:
   httpGet:
-    path: /healthz/liveness
+    path: /healthz/startup
     port: http
 livenessProbe:
   httpGet:
