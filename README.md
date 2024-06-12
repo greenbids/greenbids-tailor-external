@@ -20,11 +20,11 @@ sequenceDiagram
 
     participant GB as Greenbids Tailor
     rect rgb(30, 183, 136)
-    SSP ->>+ GB: POST /tailor @buyers
-    GB -->>- SSP: 200 @(filtered, isExploration)
+    SSP ->>+ GB: PUT / @[bidRequest, ...]
+    GB -->>- SSP: 200 @[bidRequest, ...]
     end
 
-    loop for each buyer in filtered
+    loop for each request where .ext.greenbids.tailor.shouldSend
         SSP ->>+ buyer: 1. Bid Request
         alt 200
         buyer -->> SSP: Bid Response
@@ -34,7 +34,7 @@ sequenceDiagram
     end
 
     rect rgb(30, 183, 136)
-    SSP -)+ GB: POST /stitch @(isExploration, status)
+    SSP -)+ GB: POST / @([bidRequest, ...], [bidResponse, ...])
     GB --) greenbids.ai: status
     GB -->>- SSP: 200
     end
@@ -48,42 +48,73 @@ sequenceDiagram
 
 Below, you can find a detailed description of the routes provided by the Greenbids Tailor API:
 
-* Filter a list of given demand side partners
-    ```http
-    POST /tailor
-    ```
-    * **Parameters**:
-        * TBD
+* Get buyers probabilities
 
-* Report actual partners behavior
-    ```http
-    POST /stitch
-    ```
-    * **Parameters**:
-        * TBD
+  ```http
+  PUT /
+  ```
 
-* Readiness/Health check of the service
-    ```http
-    GET /health
-    ```
+  * **Request body**:
+    * `list[BidRequest]`
+  * **Responses**:
+    * **200 - Successful Response**: `list[BidRequest]`
+    * **422 - Validation Error**: `HTTPValidationError`
+* Report buyers status
+
+  ```http
+  POST /
+  ```
+
+  * **Request body**:
+    * `requests: list[BidRequest]`
+    * `responses: list[BidResponse]`
+  * **Responses**:
+    * **200 - Successful Response**: `list[BidRequest]`
+    * **422 - Validation Error**: `HTTPValidationError`
+* Startup probe
+
+  ```http
+  GET /healthz/startup
+  ```
+
+  * **Responses**:
+    * **200 - Successful Response**: `list[BidRequest]`
+* Liveness probe
+
+  ```http
+  GET /healthz/liveness
+  ```
+
+  * **Responses**:
+    * **200 - Successful Response**: `list[BidRequest]`
+* Readiness probe
+
+  ```http
+  GET /healthz/readiness
+  ```
+
+  * **Responses**:
+    * **200 - Successful Response**: `list[BidRequest]`
 
 ## 🚀 Deployment
-
 
 Depending on your current stack, find the best way to deploy this service.
 
 * Executable
+
   ```bash
-  pip install greenbids-tailor
-  greenbids-tailor --port 8080
+  pip install ./python
+  uvicorn greenbids.tailor:app
   ```
 
 * Docker
+
   ```bash
   docker run -P ghcr.io/greenbids/tailor:latest
   ```
 
 * Helm
+
   ```bash
   helm install --create-namespace --namespace greenbids tailor oci://ghcr.io/greenbids/charts/tailor
   ```

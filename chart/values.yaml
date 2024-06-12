@@ -55,13 +55,17 @@ resources:
     cpu: 1000m
     memory: 512Mi
 
+startupProbe:
+  httpGet:
+    path: /healthz/liveness
+    port: http
 livenessProbe:
   httpGet:
-    path: /ping
+    path: /healthz/liveness
     port: http
 readinessProbe:
   httpGet:
-    path: /ping
+    path: /healthz/readiness
     port: http
 
 autoscaling:

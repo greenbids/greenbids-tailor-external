@@ -43,7 +43,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           build-args: |
             PYTHON_VERSION=3.12
-            TAILOR_VERSION=1
+            TAILOR_VERSION=0.0.1
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       # Waiting for public visibility

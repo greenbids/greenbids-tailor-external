@@ -1,0 +1,37 @@
+name: Create and publish Python package
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on:
+      - gb-arc-staging
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+      - uses: actions/setup-python@v5
+      - name: Build wheel
+        working-directory: python
+        run: pip wheel --no-deps -w dist .
+      - uses: actions/upload-artifact@v4
+        with:
+          path: python/dist/*.whl
+  # TODO: Uncomment me when GB PyPI account is setup
+  # publish:
+  #   name: Upload release to PyPI
+  #   runs-on:
+  #     - gb-arc-staging
+  #   environment:
+  #     name: pypi
+  #     url: https://pypi.org/p/greenbids-tailor
+  #   permissions:
+  #     id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+  #   steps:
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         path: dist/
+  #     - name: Publish package distributions to PyPI
+  #       uses: pypa/gh-action-pypi-publish@release/v1
