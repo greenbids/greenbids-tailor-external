@@ -1,25 +1,28 @@
-from greenbids.tailor._version import version
 from fastapi import FastAPI
 
-from greenbids.tailor import bid_request
+from greenbids.tailor import fabric
 
+from importlib.metadata import distribution
+
+pkg_dist = distribution("greenbids-tailor")
 app = FastAPI(
-    title="Greenbids Tailor", summary="Traffic shaping for SSPs", version=version
+    title=" ".join(pkg_dist.name.split("-")).title(),
+    summary=str(pkg_dist.metadata.json.get("summary")),
+    description=str(pkg_dist.metadata.json.get("description")),
+    version=pkg_dist.version,
 )
 
 
 @app.put("/")
 async def get_buyers_probabilities(
-    requests: list[bid_request.BidRequest],
-) -> list[bid_request.BidRequest]:
-    return requests
+    fabrics: list[fabric.Fabric],
+) -> list[fabric.Fabric]:
+    return fabrics
 
 
 @app.post("/")
-async def report_buyers_status(
-    requests: list[bid_request.BidRequest], responses: list[bid_request.BidResponse]
-) -> list[bid_request.BidRequest]:
-    return requests
+async def report_buyers_status(fabrics: list[fabric.Fabric]) -> list[fabric.Fabric]:
+    return fabrics
 
 
 @app.get("/healthz/startup")

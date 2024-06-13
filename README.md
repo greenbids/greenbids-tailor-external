@@ -1,7 +1,7 @@
 
 # 🪡 Greenbids Tailor
 
-Traffic shaping for SSPs
+Bring **traffic shaping** to your own cloud!
 
 [![Greenbids logo](https://www.greenbids.ai/wp-content/uploads/2023/11/greenbids-logo.svg)](https://www.greenbids.ai)
 
@@ -20,11 +20,11 @@ sequenceDiagram
 
     participant GB as Greenbids Tailor
     rect rgb(30, 183, 136)
-    SSP ->>+ GB: PUT / @[bidRequest, ...]
-    GB -->>- SSP: 200 @[bidRequest, ...]
+    SSP ->>+ GB: PUT / @[Fabric, ...]
+    GB -->>- SSP: 200 @[Fabric, ...]
     end
 
-    loop for each request where .ext.greenbids.tailor.shouldSend
+    loop for each request where fabric.prediction.shouldSend
         SSP ->>+ buyer: 1. Bid Request
         alt 200
         buyer -->> SSP: Bid Response
@@ -34,7 +34,7 @@ sequenceDiagram
     end
 
     rect rgb(30, 183, 136)
-    SSP -)+ GB: POST / @([bidRequest, ...], [bidResponse, ...])
+    SSP -)+ GB: POST / @[Fabric, ...]
     GB --) greenbids.ai: status
     GB -->>- SSP: 200
     end
@@ -55,9 +55,9 @@ Below, you can find a detailed description of the routes provided by the Greenbi
   ```
 
   * **Request body**:
-    * `list[BidRequest]`
+    * `list[Fabric]`
   * **Responses**:
-    * **200 - Successful Response**: `list[BidRequest]`
+    * **200 - Successful Response**: `list[Fabric]`
     * **422 - Validation Error**: `HTTPValidationError`
 * Report buyers status
 
@@ -66,10 +66,9 @@ Below, you can find a detailed description of the routes provided by the Greenbi
   ```
 
   * **Request body**:
-    * `requests: list[BidRequest]`
-    * `responses: list[BidResponse]`
+    * `list[Fabric]`
   * **Responses**:
-    * **200 - Successful Response**: `list[BidRequest]`
+    * **200 - Successful Response**: `list[Fabric]`
     * **422 - Validation Error**: `HTTPValidationError`
 * Startup probe
 
@@ -78,7 +77,7 @@ Below, you can find a detailed description of the routes provided by the Greenbi
   ```
 
   * **Responses**:
-    * **200 - Successful Response**: `list[BidRequest]`
+    * **200 - Successful Response**
 * Liveness probe
 
   ```http
@@ -86,7 +85,7 @@ Below, you can find a detailed description of the routes provided by the Greenbi
   ```
 
   * **Responses**:
-    * **200 - Successful Response**: `list[BidRequest]`
+    * **200 - Successful Response**
 * Readiness probe
 
   ```http
@@ -94,7 +93,7 @@ Below, you can find a detailed description of the routes provided by the Greenbi
   ```
 
   * **Responses**:
-    * **200 - Successful Response**: `list[BidRequest]`
+    * **200 - Successful Response**
 
 ## 🚀 Deployment
 
