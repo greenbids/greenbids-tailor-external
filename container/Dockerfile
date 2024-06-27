@@ -16,7 +16,8 @@ USER greenbids
 ENV PORT=8080
 EXPOSE 8080
 
-ENTRYPOINT ["uvicorn", "greenbids.tailor:app"]
+ENTRYPOINT ["greenbids-tailor"]
+CMD ["run"]
 
 ARG TAILOR_VERSION
 #Waiting to publish python package

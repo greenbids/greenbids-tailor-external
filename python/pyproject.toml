@@ -5,7 +5,13 @@ build-backend = "hatchling.build"
 [project]
 dynamic = ["version"]
 name = "greenbids-tailor"
-dependencies = ["fastapi~=0.111"]
+dependencies = [
+    "fastapi~=0.111",
+    "opentelemetry-api",
+    "opentelemetry-sdk",
+    "opentelemetry-instrumentation-fastapi",
+    "opentelemetry-exporter-otlp-proto-http"
+]
 requires-python = ">=3.11"
 authors = [{ name = "greenbids.ai" }]
 description = "Bring traffic shaping to your own cloud"
@@ -21,13 +27,13 @@ classifiers = [
 Repository = "https://github.com/greenbids/greenbids-tailor-external.git"
 
 [project.scripts]
-greenbids-tailor = "greenbids.tailor.__main__:_main"
+greenbids-tailor = "greenbids.tailor.core.__main__:main"
 
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/greenbids"]
 [tool.hatch.version]
 source = "vcs"
-path = "src/greenbids/tailor/_version.py"
+path = "src/greenbids/tailor/core/_version.py"
 [tool.hatch.version.raw-options]
 root=".."
