@@ -2,7 +2,7 @@ import random
 import typing
 
 import pydantic
-from greenbids.tailor.fabric import Fabric
+from greenbids.tailor.core.fabric import Fabric
 from polyfactory.factories import TypedDictFactory
 
 import locust
