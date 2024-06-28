@@ -11,3 +11,6 @@ meter_provider = metrics.MeterProvider(
 )
 tracer_provider = trace.TracerProvider()
 tracer_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
+
+meter = meter_provider.get_meter("greenbids.tailor")
+tracer = tracer_provider.get_tracer("greenbids.tailor")
