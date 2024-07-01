@@ -1,13 +1,11 @@
-import logging
-from typing import Protocol
 from abc import abstractmethod
+from importlib.metadata import entry_points
+from abc import ABC
 
 from greenbids.tailor.core import fabric
 
-_logger = logging.getLogger(__name__)
 
-
-class Model(Protocol):
+class Model(ABC):
     @abstractmethod
     def get_buyers_probabilities(
         self,
@@ -37,12 +35,8 @@ class NullModel(Model):
         return fabrics
 
 
-def get_model() -> Model:
-    import os
-    from importlib.metadata import entry_points
+REGISTRY = entry_points(group="greenbids-tailor-models")
 
-    model_name = os.environ.get("GREENBIDS_TAILOR_MODEL_NAME", "default")
-    _logger.info("Loading model '%s'", model_name)
 
-    models = entry_points(group="greenbids-tailor-models")
-    return models[model_name].load().get_instance()
+def get_instance():
+    return NullModel()
