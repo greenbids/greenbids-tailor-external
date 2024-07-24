@@ -36,6 +36,7 @@ jobs:
             openapi.json
           key: openapi-${{ github.sha }}
   build:
+    needs: openapi
     runs-on:
       - ubuntu-latest
     steps:
