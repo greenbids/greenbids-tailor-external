@@ -51,7 +51,7 @@ jobs:
           tar -xvzf swagger-ui.tar.gz --wildcards 'swagger-api-swagger-ui-*/dist/' && \
           mv swagger-api-swagger-ui-*/dist/ _site && \
           cp openapi.json _site/openapi.json && \
-          sed -e 's#https://petstore.swagger.io/v2/swagger.json#./openapi.json#' _site/swagger-initializer.js
+          sed -i -e 's#https://petstore.swagger.io/v2/swagger.json#./openapi.json#' _site/swagger-initializer.js
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
 
