@@ -20,12 +20,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Build package
-        working-directory: python
-        run: pip wheel --no-deps -w dist .
       - name: Install package
         working-directory: python
-        run: pip install dist/*.whl
+        run: pip install .
       - name: OpenAPI spec generation
         run: python -c 'from greenbids.tailor.core.app import app; import json; print(json.dumps(app.openapi()))' > openapi.json
       - name: Save OpenAPI spec
@@ -35,6 +32,7 @@ jobs:
           path: |
             openapi.json
           key: openapi-${{ github.sha }}
+
   build:
     needs: openapi
     runs-on:
@@ -48,15 +46,14 @@ jobs:
             openapi.json
           key: openapi-${{ github.sha }}
       - name: Generate Swagger UI
-        uses: Legion2/swagger-ui-action@v1
-        with:
-          output: swagger-ui
-          spec-file: openapi.json
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -L https://api.github.com/repos/swagger-api/swagger-ui/releases/latest | jq -r '.tarball_url' | xargs curl -L -o swagger-ui.tar.gz && \
+          tar -xvzf swagger-ui.tar.gz --wildcards 'swagger-api-swagger-ui-*/dist/' && \
+          mv swagger-api-swagger-ui-*/dist/ _site && \
+          cp openapi.json _site/openapi.json && \
+          sed -e 's#https://petstore.swagger.io/v2/swagger.json#./openapi.json#' _site/swagger-initializer.js
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
-        with:
-          path: swagger-ui
 
   deploy:
     needs: build
