@@ -46,54 +46,7 @@ sequenceDiagram
 
 ### Routes
 
-Below, you can find a detailed description of the routes provided by the Greenbids Tailor API:
-
-* Get buyers probabilities
-
-  ```http
-  PUT /
-  ```
-
-  * **Request body**:
-    * `list[Fabric]`
-  * **Responses**:
-    * **200 - Successful Response**: `list[Fabric]`
-    * **422 - Validation Error**: `HTTPValidationError`
-* Report buyers status
-
-  ```http
-  POST /
-  ```
-
-  * **Request body**:
-    * `list[Fabric]`
-  * **Responses**:
-    * **200 - Successful Response**: `list[Fabric]`
-    * **422 - Validation Error**: `HTTPValidationError`
-* Startup probe
-
-  ```http
-  GET /healthz/startup
-  ```
-
-  * **Responses**:
-    * **200 - Successful Response**
-* Liveness probe
-
-  ```http
-  GET /healthz/liveness
-  ```
-
-  * **Responses**:
-    * **200 - Successful Response**
-* Readiness probe
-
-  ```http
-  GET /healthz/readiness
-  ```
-
-  * **Responses**:
-    * **200 - Successful Response**
+See API documentation [online](https://greenbids.github.io/greenbids-tailor-external/).
 
 ## 🚀 Deployment
 
