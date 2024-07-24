@@ -9,9 +9,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  openapi:
     runs-on:
-      - ubuntu-latest
+        - ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,11 +20,32 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Build package
+        working-directory: python
+        run: pip wheel --no-deps -w dist .
       - name: Install package
         working-directory: python
-        run: pip install .
+        run: pip install dist/*.whl
       - name: OpenAPI spec generation
         run: python -c 'from greenbids.tailor.core.app import app; import json; print(json.dumps(app.openapi()))' > openapi.json
+      - name: Save OpenAPI spec
+        id: cache-openapi-save
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            openapi.json
+          key: openapi-${{ github.sha }}
+  build:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Restore OpenAPI spec
+        id: cache-primes-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            openapi.json
+          key: openapi-${{ github.sha }}
       - name: Generate Swagger UI
         uses: Legion2/swagger-ui-action@v1
         with:
