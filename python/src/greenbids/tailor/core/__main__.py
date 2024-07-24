@@ -1,12 +1,14 @@
 import os
-import sys
+import pathlib
+import fastapi_cli.cli
+from greenbids.tailor.core.app import app
+
+__all__ = ["app"]
 
 
-def main():
-    os.execlp("fastapi", "greenbids-tailor", *(sys.argv[1:] or ["dev"]), __file__)
+def run():
+    os.execlp("fastapi", "greenbids-tailor", "run", __file__)
 
 
 if __name__ == "__main__":
-    main()
-else:
-    from greenbids.tailor.core.app import app  # noqa: F401
+    fastapi_cli.cli.dev(pathlib.Path(__file__))

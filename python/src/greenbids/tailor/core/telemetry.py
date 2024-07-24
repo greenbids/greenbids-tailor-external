@@ -5,6 +5,7 @@ from opentelemetry.sdk.metrics.export import (
     PeriodicExportingMetricReader,
 )
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from greenbids.tailor.core._version import __version__
 
 meter_provider = metrics.MeterProvider(
     metric_readers=([PeriodicExportingMetricReader(OTLPMetricExporter())])
@@ -12,5 +13,7 @@ meter_provider = metrics.MeterProvider(
 tracer_provider = trace.TracerProvider()
 tracer_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
 
-meter = meter_provider.get_meter("greenbids.tailor")
-tracer = tracer_provider.get_tracer("greenbids.tailor")
+instrumentation_root = "greenbids.tailor"
+
+meter = meter_provider.get_meter(instrumentation_root, __version__)
+tracer = tracer_provider.get_tracer(instrumentation_root, __version__)

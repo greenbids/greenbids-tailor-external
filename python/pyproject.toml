@@ -10,7 +10,7 @@ dependencies = [
     "opentelemetry-api~=1.25",
     "opentelemetry-sdk~=1.25",
     "opentelemetry-exporter-otlp-proto-grpc~=1.25",
-    "opentelemetry-instrumentation-fastapi<1.0",
+    "opentelemetry-instrumentation-fastapi~=0.46b0",
 ]
 requires-python = ">=3.11"
 authors = [{ name = "greenbids.ai" }]
@@ -27,15 +27,18 @@ classifiers = [
 Repository = "https://github.com/greenbids/greenbids-tailor-external.git"
 
 [project.scripts]
-greenbids-tailor = "greenbids.tailor.core.__main__:main"
+greenbids-tailor = "greenbids.tailor.core.__main__:run"
 
 [project.entry-points.greenbids-tailor-models]
 None = 'greenbids.tailor.core.models'
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/greenbids"]
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/greenbids/tailor/core/_version.py"
+
 [tool.hatch.version]
 source = "vcs"
-path = "src/greenbids/tailor/core/_version.py"
 [tool.hatch.version.raw-options]
-root=".."
+root = ".."
