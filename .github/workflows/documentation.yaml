@@ -1,0 +1,77 @@
+name: Generate documentation page
+
+on:
+  push:
+    branches:
+      - 'main'
+  workflow_dispatch:
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  openapi:
+    runs-on:
+        - ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install package
+        working-directory: python
+        run: pip install .
+      - name: OpenAPI spec generation
+        run: python -c 'from greenbids.tailor.core.app import app; import json; print(json.dumps(app.openapi()))' > openapi.json
+      - name: Save OpenAPI spec
+        id: cache-openapi-save
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            openapi.json
+          key: openapi-${{ github.sha }}
+
+  build:
+    needs: openapi
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Restore OpenAPI spec
+        id: cache-primes-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            openapi.json
+          key: openapi-${{ github.sha }}
+      - name: Generate Swagger UI
+        run: |
+          curl -L https://api.github.com/repos/swagger-api/swagger-ui/releases/latest | jq -r '.tarball_url' | xargs curl -L -o swagger-ui.tar.gz && \
+          tar -xvzf swagger-ui.tar.gz --wildcards 'swagger-api-swagger-ui-*/dist/' && \
+          mv swagger-api-swagger-ui-*/dist/ _site && \
+          cp openapi.json _site/openapi.json && \
+          sed -i -e 's#https://petstore.swagger.io/v2/swagger.json#./openapi.json#' _site/swagger-initializer.js
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
