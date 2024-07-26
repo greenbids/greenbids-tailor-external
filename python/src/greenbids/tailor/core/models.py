@@ -1,6 +1,9 @@
 from abc import abstractmethod
-from importlib.metadata import entry_points
+from importlib import metadata
 from abc import ABC
+import subprocess
+import io
+import os
 
 from greenbids.tailor.core import fabric
 
@@ -21,6 +24,13 @@ class Model(ABC):
     ) -> list[fabric.Fabric]:
         raise NotImplementedError
 
+    def dump(self, fp: io.BytesIO) -> None:
+        pass
+
+    @classmethod
+    def load(cls, fp: io.BytesIO) -> "Model":
+        return cls()
+
 
 class NullModel(Model):
 
@@ -37,7 +47,22 @@ class NullModel(Model):
         return fabrics
 
 
-REGISTRY = entry_points(group="greenbids-tailor-models")
+REGISTRY = metadata.entry_points(group="greenbids-tailor-models")
+
+
+def fetch(target: str):
+    subprocess.check_output(
+        [
+            "pip",
+            "install",
+            "--upgrade",
+            "--index-url",
+            os.environ.get("GREENBIDS_TAILOR_INDEX_URL", ""),
+            target,
+        ]
+    )
+    REGISTRY.clear()
+    REGISTRY.extend(metadata.entry_points(group="greenbids-tailor-models"))
 
 
 def get_instance():
