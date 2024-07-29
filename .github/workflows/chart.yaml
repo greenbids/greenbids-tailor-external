@@ -1,13 +1,17 @@
 name: Create and publish a Helm Chart
 
 on:
-  push:
+  workflow_run:
+    workflows:
+      - Create and publish a Docker image
+    types:
+      - completed
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
   CHART_NAMESPACE: greenbids/charts
   CHART_NAME: tailor
-  VERSION: 1.0.0
 
 jobs:
   build-and-publish-chart:
@@ -34,6 +38,8 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.CHART_NAMESPACE }}/${{ env.CHART_NAME }}
       - name: Helm chart Package and Push
         uses: WyriHaximus/github-action-helm3@v4
+        env:
+          VERSION: ${{ steps.meta.outputs.labels[0] }}
         with:
           exec: |
             helm package --version ${{ env.VERSION }} --app-version ${{ env.VERSION }} chart/ && \

@@ -19,6 +19,6 @@ EXPOSE 8080
 ENTRYPOINT ["greenbids-tailor"]
 CMD ["run"]
 
+ARG PIP_INDEX_URL="https://pypi.org/simple"
 ARG TAILOR_VERSION
-#Waiting to publish python package
-#RUN pip3 install --no-cache-dir greenbids-tailor==${TAILOR_VERSION}
+RUN pip3 install --no-cache-dir --index-url=${PIP_INDEX_URL} greenbids-tailor==${TAILOR_VERSION}
