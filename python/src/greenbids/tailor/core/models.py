@@ -1,6 +1,8 @@
-from abc import abstractmethod
-from importlib.metadata import entry_points
-from abc import ABC
+import os
+import pickle
+import subprocess
+import typing
+from abc import ABC, abstractmethod
 
 from greenbids.tailor.core import fabric
 
@@ -21,6 +23,13 @@ class Model(ABC):
     ) -> list[fabric.Fabric]:
         raise NotImplementedError
 
+    def dump(self, fp: typing.BinaryIO) -> None:
+        pickle.dump(self, fp)
+
+    @classmethod
+    def load(cls, fp: typing.BinaryIO) -> "Model":
+        return pickle.load(fp)
+
 
 class NullModel(Model):
 
@@ -37,8 +46,21 @@ class NullModel(Model):
         return fabrics
 
 
-REGISTRY = entry_points(group="greenbids-tailor-models")
+ENTRY_POINTS_GROUP = "greenbids-tailor-models"
 
 
-def get_instance():
+def download(target: str):
+    subprocess.check_output(
+        [
+            "pip",
+            "install",
+            "--upgrade",
+            "--index-url",
+            os.environ.get("GREENBIDS_TAILOR_INDEX_URL", ""),
+            target,
+        ]
+    )
+
+
+def get_instance(**_):
     return NullModel()
