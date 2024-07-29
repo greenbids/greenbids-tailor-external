@@ -1,13 +1,14 @@
 import contextlib
 import logging
-import os
+from . import resources
 
 _logger = logging.getLogger(__name__)
 
 
 @contextlib.contextmanager
 def profile():
-    if os.environ.get("GREENBIDS_TAILOR_PROFILE"):
+    profiling_output = resources.get_instance().profiling_output
+    if profiling_output:
         import cProfile
 
         _logger.info("Profiling enabled")
@@ -20,4 +21,4 @@ def profile():
 
     if profiler:
         _logger.info("Dumping profile...")
-        profiler.dump_stats(str(os.environ["GREENBIDS_TAILOR_PROFILE"]))
+        profiler.dump_stats(profiling_output)

@@ -1,9 +1,8 @@
-from abc import abstractmethod
-from importlib import metadata
-from abc import ABC
-import subprocess
-import io
 import os
+import pickle
+import subprocess
+import typing
+from abc import ABC, abstractmethod
 
 from greenbids.tailor.core import fabric
 
@@ -24,12 +23,12 @@ class Model(ABC):
     ) -> list[fabric.Fabric]:
         raise NotImplementedError
 
-    def dump(self, fp: io.BytesIO) -> None:
-        pass
+    def dump(self, fp: typing.BinaryIO) -> None:
+        pickle.dump(self, fp)
 
     @classmethod
-    def load(cls, fp: io.BytesIO) -> "Model":
-        return cls()
+    def load(cls, fp: typing.BinaryIO) -> "Model":
+        return pickle.load(fp)
 
 
 class NullModel(Model):
@@ -47,10 +46,10 @@ class NullModel(Model):
         return fabrics
 
 
-REGISTRY = metadata.entry_points(group="greenbids-tailor-models")
+ENTRY_POINTS_GROUP = "greenbids-tailor-models"
 
 
-def fetch(target: str):
+def download(target: str):
     subprocess.check_output(
         [
             "pip",
@@ -61,9 +60,7 @@ def fetch(target: str):
             target,
         ]
     )
-    REGISTRY.clear()
-    REGISTRY.extend(metadata.entry_points(group="greenbids-tailor-models"))
 
 
-def get_instance():
+def get_instance(**_):
     return NullModel()
