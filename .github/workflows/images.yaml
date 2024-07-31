@@ -47,7 +47,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           build-args: |
             PYTHON_VERSION=3.12
-            TAILOR_VERSION=${{ steps.meta.outputs.labels[0] }}
+            TAILOR_VERSION=${{ steps.meta.outputs.tags[0] }}
             PIP_INDEX_URL=${{ startsWith(github.ref, 'refs/tags/') && 'https://pypi.org' || 'https://test.pypi.org' }}/simple
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
