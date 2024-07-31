@@ -39,7 +39,7 @@ jobs:
       - name: Helm chart Package and Push
         uses: WyriHaximus/github-action-helm3@v4
         env:
-          VERSION: ${{ steps.meta.outputs.labels[0] }}
+          VERSION: ${{ steps.meta.outputs.version }}
         with:
           exec: |
             helm package --version ${{ env.VERSION }} --app-version ${{ env.VERSION }} chart/ && \
