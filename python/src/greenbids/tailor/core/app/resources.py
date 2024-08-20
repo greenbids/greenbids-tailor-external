@@ -12,7 +12,7 @@ from greenbids.tailor.core import models
 _logger = logging.getLogger(__name__)
 
 
-def _default_refresh_period():
+def _default_refresh_period() -> datetime.timedelta:
     return (
         datetime.timedelta(seconds=float(seconds))
         if (
