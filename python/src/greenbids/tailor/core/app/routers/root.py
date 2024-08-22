@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from greenbids.tailor.core import fabric
-from greenbids.tailor.core.app.resources import APP_RESOURCES
+from .. import resources
 
 router = APIRouter(tags=["Main"])
 
@@ -15,7 +15,7 @@ async def get_buyers_probabilities(
     Only the feature map attribute of the fabrics needs to be present.
     The prediction attribute will be populated in the returned response.
     """
-    return APP_RESOURCES.gb_model.get_buyers_probabilities(fabrics)
+    return resources.get_instance().gb_model.get_buyers_probabilities(fabrics)
 
 
 @router.post("/")
@@ -28,4 +28,4 @@ async def report_buyers_status(
     All fields of the fabrics need to be set.
     Returns the same data than the input.
     """
-    return APP_RESOURCES.gb_model.report_buyers_status(fabrics)
+    return resources.get_instance().gb_model.report_buyers_status(fabrics)

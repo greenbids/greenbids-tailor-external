@@ -1,19 +1,36 @@
 import contextlib
 from importlib.metadata import distribution
+import logging
 
 from fastapi import FastAPI
-
-from greenbids.tailor.core import telemetry
+from greenbids.tailor.core import telemetry, models
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from . import resources, profiler
-from .routers import root, healthz
 
+from . import profiler, resources, tasks
+from .routers import healthz, root
+
+_logger = logging.getLogger(__name__)
 
 @contextlib.asynccontextmanager
 async def _lifespan(app: FastAPI):
-    resources.APP_RESOURCES.setup()
+    if resources.get_instance.cache_info().currsize > 0:
+        _logger.warning("A resource object was initialized before app startup")
+    app_resources = resources.get_instance()
+    tasks.repeat_every(
+        seconds=app_resources.gb_model_refresh_period.total_seconds(),
+        wait_first=True,
+        logger=_logger.getChild("model_reload"),
+    )(_periodic_model_reload)
     with profiler.profile():
         yield
+
+def _periodic_model_reload():
+    app_resources = resources.get_instance()
+    if app_resources.gb_model_name is str(None):
+        _logger.debug("Nothing to reload")
+        return
+    models.download(f"greenbids-tailor-models-{app_resources.gb_model_name}")
+    resources.get_instance().refresh_model()
 
 
 pkg_dist = distribution("greenbids-tailor")
