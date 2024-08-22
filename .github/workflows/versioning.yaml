@@ -1,0 +1,42 @@
+name: Generate version numbers
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    outputs:
+      semver:
+        value: |
+          ${{ format('{0}{1}',
+          jobs.version.outputs.next-version,
+          jobs.version.outputs.pre-release && format('-{0}', jobs.version.outputs.pre-release) || ''
+          )}}
+      pep440:
+        value: |
+          ${{ format('{0}{1}',
+          jobs.version.outputs.next-version,
+          jobs.version.outputs.pre-release
+          )}}
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      pre-release: ${{ steps.pre-release.outputs.pre-release }}
+      next-version: ${{ steps.bump.outputs.next-version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - uses: proudust/gh-describe@v2
+        id: ghd
+      - name: Bump version
+        id: bump
+        uses: christian-draeger/increment-semantic-version@1.0.3
+        with:
+          current-version: ${{ steps.ghd.outputs.tag }}
+          version-fragment: 'bug'
+      - name: Pre-release identifier
+        id: pre-release
+        run: |
+          echo "pre-release=${{
+            github.event_name == 'pull_request' && format('-a{0}.dev{1}', github.event.pull_request.number, steps.ghd.outputs.distance) ||
+            ((github.event_name == 'push' && github.ref_name == 'main') && format('-rc{0}', steps.ghd.outputs.distance) || '') }}" | tee -a "$GITHUB_OUTPUT"
