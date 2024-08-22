@@ -52,7 +52,6 @@ class AppResources(pydantic.BaseModel):
         )
         _logger.info(self.model_dump_json())
 
-    @pydantic.computed_field
     @property
     def gb_model(self) -> models.Model:
         return self._gb_model
