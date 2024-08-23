@@ -28,7 +28,24 @@ env:
   CHART_NAME: tailor
 
 jobs:
-  build-and-push:
+  build:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Package
+        uses: WyriHaximus/github-action-helm3@v4
+        with:
+          exec: |
+            helm package --version ${{ inputs.version }} --app-version ${{ inputs.app-version }} chart/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chart
+          path: ${{ env.CHART_NAME }}-${{ inputs.version }}.tgz
+  push:
+    if: github.event_type == 'push'
+    needs: build
     runs-on:
       - ubuntu-latest
     permissions:
@@ -37,22 +54,18 @@ jobs:
       attestations: write
       id-token: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: chart
+          path: "."
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Package
-        uses: WyriHaximus/github-action-helm3@v4
-        with:
-          exec: |
-            helm package --version ${{ inputs.version }} --app-version ${{ inputs.app-version }} chart/
       - name: Push
-        if: github.event_type == 'push'
         uses: WyriHaximus/github-action-helm3@v4
         with:
           exec: |
-            helm push ${{ env.CHART_NAME }}-${{ inputs.VERSION }}.tgz oci://${{ env.REGISTRY }}/${{ env.CHART_NAMESPACE }}
+            helm push ${{ env.CHART_NAME }}-${{ inputs.version }}.tgz oci://${{ env.REGISTRY }}/${{ env.CHART_NAMESPACE }}
