@@ -5,13 +5,13 @@ on:
   workflow_call:
     outputs:
       semver:
-        value: |
+        value: >-
           ${{ format('{0}{1}',
           jobs.version.outputs.next-version,
           jobs.version.outputs.pre-release && format('-{0}', jobs.version.outputs.pre-release) || ''
           )}}
       pep440:
-        value: |
+        value: >-
           ${{ format('{0}{1}',
           jobs.version.outputs.next-version,
           jobs.version.outputs.pre-release
