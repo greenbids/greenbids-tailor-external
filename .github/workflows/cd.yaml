@@ -1,0 +1,43 @@
+name: Continuous Delivery
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+    branches:
+      - "main"
+
+
+jobs:
+  version:
+    uses: ./.github/workflows/versioning.yaml
+
+  wheel:
+    needs: version
+    uses: ./.github/workflows/wheel.yaml
+    with:
+      version: ${{ needs.version.outputs.pep440 }}
+
+  pages:
+    needs: version
+    uses: ./.github/workflows/pages.yaml
+    with:
+      version: ${{ needs.version.outputs.pep440 }}
+
+  image:
+    needs: [version, wheel]
+    uses: ./.github/workflows/image.yaml
+    with:
+      app-version: ${{ needs.version.outputs.pep440 }}
+      version: ${{ needs.version.outputs.semver }}
+
+  chart:
+    needs: version
+    uses: ./.github/workflows/chart.yaml
+    with:
+      app-version: ${{ needs.version.outputs.pep440 }}
+      version: ${{ needs.version.outputs.semver }}

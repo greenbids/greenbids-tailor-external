@@ -38,5 +38,5 @@ jobs:
         id: pre-release
         run: |
           echo "pre-release=${{
-            github.event_name == 'pull_request' && format('-a{0}.dev{1}', github.event.pull_request.number, steps.ghd.outputs.distance) ||
-            ((github.event_name == 'push' && github.ref_name == 'main') && format('-rc{0}', steps.ghd.outputs.distance) || '') }}" | tee -a "$GITHUB_OUTPUT"
+            github.event_name == 'pull_request' && format('a{0}.dev{1}', github.event.pull_request.number, steps.ghd.outputs.distance) ||
+            ((github.event_name == 'push' && github.ref_name == 'main') && format('rc{0}', steps.ghd.outputs.distance) || '') }}" | tee -a "$GITHUB_OUTPUT"

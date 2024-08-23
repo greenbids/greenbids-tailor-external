@@ -1,11 +1,18 @@
 name: Generate documentation page
 
 on:
-  push:
-    branches:
-      - 'main'
-  pull_request:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        description: Version number of the application
+        required: true
   workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: Version number of the application
+        required: true
 
 concurrency:
   group: "pages"
@@ -14,17 +21,17 @@ concurrency:
 jobs:
   openapi:
     runs-on:
-        - ubuntu-latest
+      - ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-tags: true
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
       - name: Install package
         working-directory: python
+        env:
+          SETUPTOOLS_SCM_PRETEND_VERSION: ${{ inputs.version }}
         run: pip install .
       - name: OpenAPI spec generation
         run: python -c 'from greenbids.tailor.core.app import app; import json; print(json.dumps(app.openapi()))' > openapi.json
@@ -59,14 +66,14 @@ jobs:
         uses: actions/upload-pages-artifact@v3
 
   deploy:
+    if: github.event_name == 'push'
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
 
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
 
     # Deploy to the github-pages environment
     environment:
