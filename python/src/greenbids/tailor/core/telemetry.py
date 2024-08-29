@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 
@@ -12,6 +13,8 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 
 from greenbids.tailor.core._version import __version__
+from greenbids.tailor.core.logging import RateLimitingFilter
+
 
 meter_provider = metrics.MeterProvider(
     metric_readers=([PeriodicExportingMetricReader(OTLPMetricExporter())])
@@ -32,6 +35,13 @@ handler = logs.LoggingHandler(
         os.environ.get("GREENBIDS_TAILOR_SUPPORT_LOG_LEVEL", "ERROR")
     ],
     logger_provider=logger_provider,
+)
+# Add a rate limiter to avoid support stack overwhelm
+handler.addFilter(
+    RateLimitingFilter(
+        count=int(os.environ.get("GREENBIDS_TAILOR_SUPPORT_COUNT", 30)),
+        per=datetime.timedelta(minutes=1),
+    )
 )
 # Attach handler to root logger and greenbids logger (that doesn't propagate)
 logging.getLogger().addHandler(handler)
