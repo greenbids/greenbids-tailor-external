@@ -48,7 +48,7 @@ jobs:
     needs: build
     environment:
       name: chart-repository
-      url: ${{ env.REGISTRY }}/${{ env.CHART_NAMESPACE }}/${{ env.CHART_NAME }}:${{ inputs.version }}
+      url: http://${{ env.REGISTRY }}/${{ env.CHART_NAMESPACE }}/${{ env.CHART_NAME }}
     runs-on:
       - ubuntu-latest
     permissions:

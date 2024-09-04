@@ -37,7 +37,7 @@ jobs:
       id-token: write
     environment:
       name: container-registry
-      url: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+      url: http://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -68,7 +68,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           build-args: |-
             PYTHON_VERSION=3.12
-            TAILOR_VERSION_SPEC=${{ github.event_name == 'push' && '==' || '<=' }}${{ inputs.app-version }}
+            TAILOR_VERSION_SPEC=${{ github.event_name == 'push' && format('=={0}', inputs.app-version)  || '' }}
             PIP_EXTRA_ARGS=${{
               github.ref_type != 'tag'
               && '--pre --index-url=https://test.pypi.org/simple --extra-index-url=https://pypi.org/simple'
