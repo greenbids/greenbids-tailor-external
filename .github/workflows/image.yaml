@@ -59,6 +59,17 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+      - name: Wait for package availability
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          try=10
+          while [ "$try" -gt 0 ]; do
+            sleep 5
+            curl -I --fail https://${{ github.ref_type != 'tag' && 'test.' || '' }}pypi.org/pypi/greenbids-tailor/${{ inputs.app-version }}/json && exit 0
+            try=$(( try - 1 ))
+          done
+          exit 1
+
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v5
