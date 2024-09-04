@@ -1,3 +1,4 @@
+import logging
 import os
 import pickle
 import subprocess
@@ -5,6 +6,8 @@ import typing
 from abc import ABC, abstractmethod
 
 from greenbids.tailor.core import fabric
+
+_logger = logging.getLogger(__name__)
 
 
 class Model(ABC):
@@ -33,6 +36,9 @@ class Model(ABC):
 
 class NullModel(Model):
 
+    def __init__(self):
+        self._logger = _logger.getChild("null")
+
     def get_buyers_probabilities(
         self,
         fabrics: list[fabric.Fabric],
@@ -43,6 +49,7 @@ class NullModel(Model):
         self,
         fabrics: list[fabric.Fabric],
     ) -> list[fabric.Fabric]:
+        self._logger.debug([f.feature_map.root for f in fabrics[:1]])
         return fabrics
 
 
