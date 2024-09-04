@@ -39,7 +39,7 @@ jobs:
   publish:
     name: Upload release to PyPI
     needs: build
-    if: github.event_type == 'push'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     env:
       pypi_url: ${{ github.ref_type == 'tag' && 'https://pypi.org' || 'https://test.pypi.org' }}

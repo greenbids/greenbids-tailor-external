@@ -44,7 +44,7 @@ jobs:
           name: chart
           path: ${{ env.CHART_NAME }}-${{ inputs.version }}.tgz
   push:
-    if: github.event_type == 'push'
+    if: github.event_name == 'push'
     needs: build
     runs-on:
       - ubuntu-latest
