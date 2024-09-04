@@ -63,10 +63,13 @@ jobs:
           context: container/
           push: ${{ github.event_name == 'push' }}
           platforms: linux/amd64,linux/arm64
-          build-args: |
+          build-args: |-
             PYTHON_VERSION=3.12
             TAILOR_VERSION_SPEC=${{ github.event_name == 'push' && '==' || '<=' }}${{ inputs.app-version }}
-            PIP_INDEX_URL=${{ github.ref_type == 'tag' && 'https://pypi.org' || 'https://test.pypi.org' }}/simple
+            PIP_EXTRA_ARGS=${{
+              github.ref_type != 'tag'
+              && '--pre --index-url=https://test.pypi.org/simple --extra-index-url=https://pypi.org/simple'
+              || '' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       # Waiting for public visibility
