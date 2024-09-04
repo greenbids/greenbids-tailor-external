@@ -1,16 +1,51 @@
 name: Create and publish a Helm Chart
 
 on:
-  push:
+  workflow_call:
+    inputs:
+      app-version:
+        type: string
+        description: Version number of the packaged application
+        required: true
+      version:
+        type: string
+        description: Version number of the image and chart
+        required: true
+  workflow_dispatch:
+    inputs:
+      app-version:
+          type: string
+          description: Version number of the packaged application
+          required: true
+      version:
+          type: string
+          description: Version number of the image and chart
+          required: true
 
 env:
   REGISTRY: ghcr.io
   CHART_NAMESPACE: greenbids/charts
   CHART_NAME: tailor
-  VERSION: 1.0.0
 
 jobs:
-  build-and-publish-chart:
+  build:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Package
+        uses: WyriHaximus/github-action-helm3@v4
+        with:
+          exec: |
+            helm package --version ${{ inputs.version }} --app-version ${{ inputs.app-version }} chart/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chart
+          path: ${{ env.CHART_NAME }}-${{ inputs.version }}.tgz
+  push:
+    if: github.event_type == 'push'
+    needs: build
     runs-on:
       - ubuntu-latest
     permissions:
@@ -19,22 +54,18 @@ jobs:
       attestations: write
       id-token: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: chart
+          path: "."
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.CHART_NAMESPACE }}/${{ env.CHART_NAME }}
-      - name: Helm chart Package and Push
+      - name: Push
         uses: WyriHaximus/github-action-helm3@v4
         with:
           exec: |
-            helm package --version ${{ env.VERSION }} --app-version ${{ env.VERSION }} chart/ && \
-            helm push ${{ env.CHART_NAME }}-${{ env.VERSION }}.tgz oci://${{ env.REGISTRY }}/${{ env.CHART_NAMESPACE }}
+            helm push ${{ env.CHART_NAME }}-${{ inputs.version }}.tgz oci://${{ env.REGISTRY }}/${{ env.CHART_NAMESPACE }}

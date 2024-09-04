@@ -1,16 +1,35 @@
 name: Create and publish a Docker image
 
 on:
-  push:
+  workflow_call:
+    inputs:
+      app-version:
+        type: string
+        description: Version number of the containerized application
+        required: true
+      version:
+        type: string
+        description: Version number of the image
+        required: true
+  workflow_dispatch:
+    inputs:
+      app-version:
+          type: string
+          description: Version number of the packaged application
+          required: true
+      version:
+          type: string
+          description: Version number of the image and chart
+          required: true
+
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: greenbids/tailor
 
 jobs:
-  build-and-push-image:
-    runs-on:
-      - ubuntu-latest
+  build-and-push:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -30,6 +49,9 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=${{ inputs.version }}
+            type=raw,value=latest,enable={{is_default_branch}}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -39,11 +61,12 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: container/
-          push: true
+          push: ${{ github.event_name == 'push' }}
           platforms: linux/amd64,linux/arm64
           build-args: |
             PYTHON_VERSION=3.12
-            TAILOR_VERSION=0.0.1
+            TAILOR_VERSION_SPEC=${{ github.event_name == 'push' && '==' || '<=' }}${{ inputs.app-version }}
+            PIP_INDEX_URL=${{ github.ref_type == 'tag' && 'https://pypi.org' || 'https://test.pypi.org' }}/simple
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       # Waiting for public visibility

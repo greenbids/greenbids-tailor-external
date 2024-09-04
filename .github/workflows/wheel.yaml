@@ -1,39 +1,60 @@
 name: Create and publish Python package
 
 on:
-  push:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        description: Version number of the application
+        required: true
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: Version number of the application
+        required: true
 
 jobs:
   build:
-    runs-on:
-      - ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-tags: true
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: pip
+      - name: Install build tool
+        uses: pypa/hatch@install
       - name: Build wheel
         working-directory: python
-        run: pip wheel --no-deps -w dist .
+        env:
+          SETUPTOOLS_SCM_PRETEND_VERSION: ${{ inputs.version }}
+        run: hatch build -t wheel
       - uses: actions/upload-artifact@v4
         with:
-          path: python/dist/*.whl
-  # TODO: Uncomment me when GB PyPI account is setup
-  # publish:
-  #   name: Upload release to PyPI
-  #   runs-on:
-  #     - gb-arc-staging
-  #   environment:
-  #     name: pypi
-  #     url: https://pypi.org/p/greenbids-tailor
-  #   permissions:
-  #     id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
-  #   steps:
-  #     - uses: actions/download-artifact@v4
-  #       with:
-  #         path: dist/
-  #     - name: Publish package distributions to PyPI
-  #       uses: pypa/gh-action-pypi-publish@release/v1
+          name: wheel
+          path: python/dist/
+
+  publish:
+    name: Upload release to PyPI
+    needs: build
+    if: github.event_type == 'push'
+    runs-on: ubuntu-latest
+    env:
+      pypi_url: ${{ github.ref_type == 'tag' && 'https://pypi.org' || 'https://test.pypi.org' }}
+      pypi_path: ${{ github.ref_type == 'tag' && '/simple/' || '/legacy/' }}
+    environment:
+      name: ${{ github.ref_type == 'tag' && 'pypi' || 'testpypi' }}
+      url: "${{ env.pypi_url }}/p/greenbids-tailor"
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheel
+          path: dist
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: ${{ env.pypi_url }}${{ env.pypi_path }}
