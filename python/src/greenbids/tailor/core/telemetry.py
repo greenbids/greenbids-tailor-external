@@ -15,20 +15,19 @@ from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from greenbids.tailor.core._version import __version__
 from greenbids.tailor.core.logging import RateLimitingFilter
 
+instrumentation_root = "greenbids.tailor"
 
 meter_provider = metrics.MeterProvider(
     metric_readers=([PeriodicExportingMetricReader(OTLPMetricExporter())])
 )
+meter = meter_provider.get_meter(instrumentation_root, __version__)
+
 tracer_provider = trace.TracerProvider()
 tracer_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
-logger_provider = logs.LoggerProvider()
-logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
-
-instrumentation_root = "greenbids.tailor"
-
-meter = meter_provider.get_meter(instrumentation_root, __version__)
 tracer = tracer_provider.get_tracer(instrumentation_root, __version__)
 
+logger_provider = logs.LoggerProvider()
+logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
 handler = logs.LoggingHandler(
     level=logging.getLevelNamesMapping()[
         # Only report error messages by default
@@ -43,6 +42,3 @@ handler.addFilter(
         per=datetime.timedelta(minutes=1),
     )
 )
-# Attach handler to root logger and greenbids logger (that doesn't propagate)
-logging.getLogger().addHandler(handler)
-logging.getLogger(instrumentation_root).addHandler(handler)

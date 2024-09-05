@@ -1,8 +1,6 @@
 import logging
 import datetime
 import time
-import os
-
 
 class RateLimitingFilter(logging.Filter):
     """logging filter to throttle log records generation."""
@@ -62,11 +60,3 @@ class RateLimitingFilter(logging.Filter):
             record.msg += f" ({self.throttled} additional messages suppressed!)"
         self.throttled = 0
         return True
-
-
-logger = logging.getLogger("greenbids.tailor")
-logger.setLevel(os.environ.get("GREENBIDS_TAILOR_LOG_LEVEL", "INFO"))
-handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter("%(levelname)s:%(name)s:%(message)s"))
-logger.handlers = [handler]
-logger.propagate = False
