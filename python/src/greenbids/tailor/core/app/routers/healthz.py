@@ -20,6 +20,10 @@ async def liveness_probe() -> resources.AppResources:
 @router.get("/readiness")
 async def readiness_probe() -> resources.AppResources:
     """Determine when a container is ready to start accepting traffic."""
-    if isinstance(resources.get_instance().gb_model, models.NullModel):
+    instance = resources.get_instance()
+    if (
+        isinstance(instance.gb_model, models.NullModel)
+        and instance.gb_model_name != "None"
+    ):
         raise HTTPException(status_code=status.HTTP_425_TOO_EARLY)
-    return resources.get_instance()
+    return instance
