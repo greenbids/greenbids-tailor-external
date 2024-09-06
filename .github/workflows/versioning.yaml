@@ -33,7 +33,7 @@ jobs:
         uses: christian-draeger/increment-semantic-version@1.0.3
         with:
           current-version: ${{ steps.ghd.outputs.tag }}
-          version-fragment: 'bug'
+          version-fragment: 'feature'
       - name: Pre-release identifier
         id: pre-release
         run: |
