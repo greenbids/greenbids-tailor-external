@@ -65,7 +65,7 @@ jobs:
           try=10
           while [ "$try" -gt 0 ]; do
             sleep 5
-            curl -I --fail https://${{ github.ref_type != 'tag' && 'test.' || '' }}pypi.org/pypi/greenbids-tailor/${{ inputs.app-version }}/json && exit 0
+            curl https://${{ github.ref_type != 'tag' && 'test.' || '' }}pypi.org/simple/greenbids-tailor/ | grep -q greenbids_tailor-${{ inputs.app-version }} && exit 0
             try=$(( try - 1 ))
           done
           exit 1
