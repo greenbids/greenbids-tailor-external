@@ -39,5 +39,4 @@ jobs:
     needs: version
     uses: ./.github/workflows/chart.yaml
     with:
-      app-version: ${{ needs.version.outputs.pep440 }}
       version: ${{ needs.version.outputs.semver }}

@@ -3,20 +3,12 @@ name: Create and publish a Helm Chart
 on:
   workflow_call:
     inputs:
-      app-version:
-        type: string
-        description: Version number of the packaged application
-        required: true
       version:
         type: string
         description: Version number of the image and chart
         required: true
   workflow_dispatch:
     inputs:
-      app-version:
-          type: string
-          description: Version number of the packaged application
-          required: true
       version:
           type: string
           description: Version number of the image and chart
@@ -38,7 +30,7 @@ jobs:
         uses: WyriHaximus/github-action-helm3@v4
         with:
           exec: |
-            helm package --version ${{ inputs.version }} --app-version ${{ inputs.app-version }} chart/
+            helm package --version ${{ inputs.version }} --app-version ${{ inputs.version }} chart/
       - uses: actions/upload-artifact@v4
         with:
           name: chart
