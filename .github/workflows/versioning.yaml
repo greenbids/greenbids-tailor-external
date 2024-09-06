@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       pre-release: ${{ steps.pre-release.outputs.pre-release }}
-      next-version: ${{ steps.bump.outputs.next-version }}
+      next-version: ${{ steps.bump.outputs.next-version || steps.ghd.outputs.tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -30,6 +30,7 @@ jobs:
         id: ghd
       - name: Bump version
         id: bump
+        if: github.ref_type != 'tag'
         uses: christian-draeger/increment-semantic-version@1.0.3
         with:
           current-version: ${{ steps.ghd.outputs.tag }}

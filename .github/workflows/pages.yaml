@@ -76,7 +76,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
 
   deploy:
-    if: github.event_name == 'push'
+    if: github.ref_type == 'tag'
     needs: build
     runs-on: ubuntu-latest
 
