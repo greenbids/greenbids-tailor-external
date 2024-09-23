@@ -7,8 +7,8 @@ router = APIRouter(tags=["Main"])
 
 @router.put("/")
 async def get_buyers_probabilities(
-    fabrics: list[fabric.Fabric],
-) -> list[fabric.Fabric]:
+    fabrics: dict[str, fabric.Fabric],
+) -> dict[str, fabric.Fabric]:
     """Compute the probability of the buyers to provide a bid.
 
     This must be called for each adcall.
@@ -20,8 +20,8 @@ async def get_buyers_probabilities(
 
 @router.post("/")
 async def report_buyers_status(
-    fabrics: list[fabric.Fabric],
-) -> list[fabric.Fabric]:
+    fabrics: dict[str, fabric.Fabric],
+) -> dict[str, fabric.Fabric]:
     """Train model according to actual outcome.
 
     This must NOT be called for each adcall, but only for exploration ones.
