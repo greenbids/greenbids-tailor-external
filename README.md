@@ -62,40 +62,48 @@ Following the interaction diagram provided by the [OpenRTB API Specification (ve
 ```mermaid
 sequenceDiagram
     participant Publisher
-    activate Publisher
-
     box rgba(128, 128, 128, 0.33) Partner Network
         participant SSP as RTB Exchange
         participant GB as Greenbids Tailor
     end
+    participant Bidder
+    participant greenbids.ai
 
-    Publisher ->>+ SSP: 0. Ad Request
+    activate GB
+    GB ->> greenbids.ai: Fetch model
+    greenbids.ai -->> GB: 
+    deactivate GB
 
-    rect rgba(30, 183, 136, 0.66)
-    SSP ->>+ GB: PUT / @[Fabric, ...]
-    GB -->>- SSP: 200 @[Fabric, ...]
-    end
+    loop For every ad request
+        activate Publisher
+        Publisher ->>+ SSP: 0. Ad Request
 
-    loop for each request where fabric.prediction.shouldSend
-        SSP ->>+ Bidder : 1. Bid Request
-        alt 200
-        Bidder -->> SSP: Bid Response
-        else 204
-        Bidder -->>- SSP: No Response
-        end
-    end
-
-    opt fabric.prediction.<br>isExploration
         rect rgba(30, 183, 136, 0.66)
-            SSP -)+ GB: POST / @[Fabric, ...]
-            GB -->>- SSP: 200
+        SSP ->>+ GB: PUT / @[Fabric, ...]
+        GB -->>- SSP: 200 @[Fabric, ...]
         end
-    end
-    GB --) greenbids.ai: telemetry
 
-    note over Publisher,SSP: Continue auction process
-    deactivate SSP
-    deactivate Publisher
+        loop for each request where fabric.prediction.shouldSend
+            SSP ->>+ Bidder : 1. Bid Request
+            alt 200
+            Bidder -->> SSP: Bid Response
+            else 204
+            Bidder -->>- SSP: No Response
+            end
+        end
+
+        opt fabric.prediction.<br>isExploration
+            rect rgba(30, 183, 136, 0.66)
+                SSP -)+ GB: POST / @[Fabric, ...]
+                GB -->>- SSP: 200
+            end
+        end
+
+        note over Publisher,SSP: Continue auction process
+        deactivate SSP
+        deactivate Publisher
+    end
+        GB --) greenbids.ai: telemetry
 ```
 
 ### 🏋️ Example
