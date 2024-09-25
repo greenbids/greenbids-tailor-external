@@ -15,15 +15,15 @@ class Model(ABC):
     @abstractmethod
     def get_buyers_probabilities(
         self,
-        fabrics: list[fabric.Fabric],
-    ) -> list[fabric.Fabric]:
+        fabrics: dict[str, fabric.Fabric],
+    ) -> dict[str, fabric.Fabric]:
         raise NotImplementedError
 
     @abstractmethod
     def report_buyers_status(
         self,
-        fabrics: list[fabric.Fabric],
-    ) -> list[fabric.Fabric]:
+        fabrics: dict[str, fabric.Fabric],
+    ) -> dict[str, fabric.Fabric]:
         raise NotImplementedError
 
     def dump(self, fp: typing.BinaryIO) -> None:
@@ -41,15 +41,15 @@ class NullModel(Model):
 
     def get_buyers_probabilities(
         self,
-        fabrics: list[fabric.Fabric],
-    ) -> list[fabric.Fabric]:
+        fabrics: dict[str, fabric.Fabric],
+    ) -> dict[str, fabric.Fabric]:
         return fabrics
 
     def report_buyers_status(
         self,
-        fabrics: list[fabric.Fabric],
-    ) -> list[fabric.Fabric]:
-        self._logger.debug([f.feature_map.root for f in fabrics[:1]])
+        fabrics: dict[str, fabric.Fabric],
+    ) -> dict[str, fabric.Fabric]:
+        self._logger.debug(next(f.feature_map.root for f in fabrics.values()))
         return fabrics
 
 
