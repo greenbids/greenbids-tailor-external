@@ -5,7 +5,7 @@ import locust
 import polyfactory
 
 
-class Root(locust.HttpUser):
+class Root(locust.FastHttpUser):
     """Traffic shaping testing."""
 
     @locust.task

@@ -1,6 +1,7 @@
 import logging
 import os
 import pickle
+import random
 import subprocess
 import typing
 from abc import ABC, abstractmethod
@@ -35,6 +36,7 @@ class Model(ABC):
 
 
 class NullModel(Model):
+    """Dummy model that never filter."""
 
     def __init__(self):
         self._logger = _logger.getChild("null")
@@ -43,7 +45,8 @@ class NullModel(Model):
         self,
         fabrics: list[fabric.Fabric],
     ) -> list[fabric.Fabric]:
-        return fabrics
+        prediction = fabric.Prediction(score=1, is_exploration=(random.random() < 0.2))
+        return [f.model_copy(update=dict(prediction=prediction)) for f in fabrics]
 
     def report_buyers_status(
         self,

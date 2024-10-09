@@ -9,6 +9,7 @@ class Probes(locust.HttpUser):
     """
 
     wait_time = locust.between(10, 15)
+    fixed_count = 1
 
     @locust.task
     def test_startup(self):
