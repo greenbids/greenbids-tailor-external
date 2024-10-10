@@ -35,13 +35,13 @@ docker port greenbids-tailor
 helm upgrade --install --create-namespace --namespace greenbids tailor oci://ghcr.io/greenbids/charts/tailor
 ```
 
-You have to [authenticate your Kubernetes cluster](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/) against [GitHub container registry](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic), and pass the name of the secret through `--set 'imagePullSecrets[0].name=<your-secret-name>'`.
-
 ### ✅ Test
 
 Supposing that you have successfully launched a running server locally (it's accessible through `localhost:8000`), you may be able to test your deployment.
 
 ```bash
+# Connectivity check
+curl http://loculhost:8000/ping
 # Simple liveness probe
 curl http://localhost:8000/healthz/liveness
 # Empty throttling request
@@ -79,23 +79,25 @@ sequenceDiagram
         Publisher ->>+ SSP: 0. Ad Request
 
         rect rgba(30, 183, 136, 0.66)
-        SSP ->>+ GB: PUT / @[Fabric, ...]
-        GB -->>- SSP: 200 @[Fabric, ...]
+        SSP ->>+ GB: PUT /
+        GB -->>- SSP: 200 OK
         end
 
-        loop for each request where fabric.prediction.shouldSend
-            SSP ->>+ Bidder : 1. Bid Request
-            alt 200
-            Bidder -->> SSP: Bid Response
-            else 204
-            Bidder -->>- SSP: No Response
+        loop for each fabric
+            opt if fabric.prediction.shouldSend
+                SSP ->>+ Bidder : 1. Bid Request
+                alt 200
+                Bidder -->> SSP: Bid Response
+                else 204
+                Bidder -->>- SSP: No Response
+                end
             end
         end
 
-        opt fabric.prediction.<br>isExploration
+        opt if fabric.prediction. isExploration
             rect rgba(30, 183, 136, 0.66)
-                SSP -)+ GB: POST / @[Fabric, ...]
-                GB -->>- SSP: 200
+                SSP -)+ GB: POST /
+                GB -->>- SSP: 200 OK
             end
         end
 
@@ -118,20 +120,32 @@ It also propose an example of features to pass in the payload (only for demonstr
 # Install the required dependencies
 pip install -r locustfiles/requirements.txt
 # Start load testing job
-locust --headless -f locustfiles --users 10 --spawn-rate 1 -H http://localhost:8000
+locust --headless -f locustfiles --processes -1 --users 17 --spawn-rate 4 -H http://localhost:8000
 ```
 
 Abort it when you want, pressing `Ctrl+C`.
-It will print you a summary of the test:
+It will print you a summary of the test.
+The following has been obtained on a laptop (AMD Ryzen 7 PRO, 16GB RAM) running the Python executable:
 
 ```text
-Type     Name                             # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s
---------|-------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
-POST     /                                  7231     0(0.00%) |      5       1      35      5 |  293.21        0.00
-PUT      /                                  7234     0(0.00%) |      5       1      32      5 |  293.33        0.00
-GET      /healthz/liveness                     2     0(0.00%) |     12      11      13     12 |    0.08        0.00
-GET      /healthz/readiness                    4     0(0.00%) |      8       6      10      8 |    0.16        0.00
-GET      /healthz/startup                      4     0(0.00%) |     11       4      21      6 |    0.16        0.00
---------|-------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
-         Aggregated                        14475     0(0.00%) |      5       1      35      5 |  586.95        0.00
+Type     Name                   # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s
+--------|---------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+POST                             56579     0(0.00%) |      1       0     123      1 |  462.71        0.00
+PUT                             282236     0(0.00%) |      1       0     140      2 | 2308.18        0.00
+GET      /healthz/liveness           4     0(0.00%) |     12      10      14     11 |    0.03        0.00
+GET      /healthz/readiness          3     0(0.00%) |      9       7      10      9 |    0.02        0.00
+GET      /healthz/startup            4     0(0.00%) |      9       6      13      8 |    0.03        0.00
+--------|---------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+         Aggregated             338826     0(0.00%) |      1       0     140      2 | 2770.99        0.00
+
+Response time percentiles (approximated)
+Type     Name                           50%    66%    75%    80%    90%    95%    98%    99%  99.9% 99.99%   100% # reqs
+--------|-------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
+POST                                      1      2      2      2      3      4      5      5      7     10    120  56579
+PUT                                       2      2      2      3      3      4      5      5      7    100    140 282236
+GET      /healthz/liveness               14     14     14     14     14     14     14     14     14     14     14      4
+GET      /healthz/readiness               9      9     11     11     11     11     11     11     11     11     11      3
+GET      /healthz/startup                10     10     14     14     14     14     14     14     14     14     14      4
+--------|-------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
+         Aggregated                       2      2      2      3      3      4      5      5      7    100    140 338826
 ```

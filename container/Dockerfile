@@ -13,6 +13,9 @@ RUN useradd --create-home greenbids
 
 EXPOSE 8000
 
+ENV WEB_CONCURRENCY=4
+ENV OTEL_TRACES_SAMPLER=parentbased_traceidratio
+ENV OTEL_TRACES_SAMPLER_ARG=0.0001
 ENTRYPOINT ["greenbids-tailor"]
 CMD ["run"]
 

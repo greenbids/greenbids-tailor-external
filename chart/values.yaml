@@ -80,3 +80,6 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+env:
+  WEB_CONCURRENCY: 1
