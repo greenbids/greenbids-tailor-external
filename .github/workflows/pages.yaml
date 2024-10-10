@@ -30,7 +30,7 @@ jobs:
           python-version: "3.12"
       - name: Render charts
         run: >
-          docker run -u $(id -u) -v $PWD:/data minlag/mermaid-cli
+          docker run -u $(id -u) -v $PWD:/data ghcr.io/mermaid-js/mermaid-cli/mermaid-cli:11.2.1-beta.3
           --backgroundColor '#fafafa'
           --theme forest
           -i /data/README.md
