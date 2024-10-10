@@ -1,13 +1,13 @@
 import contextlib
-from importlib.metadata import distribution
 import logging
+from importlib.metadata import distribution
 
 from fastapi import FastAPI
-from greenbids.tailor.core import telemetry, models
+from greenbids.tailor.core import models, telemetry
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from . import profiler, resources, tasks
-from .routers import healthz, root
+from .routers import healthz, ping, root
 
 _logger = logging.getLogger(__name__)
 
@@ -32,6 +32,7 @@ def _setup_logging():
 
     logging.root.addHandler(stderr_handler)
     logging.root.addHandler(telemetry.handler)
+    logging.getLogger("uvicorn.access").disabled = True
 
 
 def _periodic_model_reload():
@@ -55,7 +56,9 @@ FastAPIInstrumentor.instrument_app(
     app,
     tracer_provider=telemetry.tracer_provider,
     meter_provider=telemetry.meter_provider,
+    excluded_urls=f"{healthz.router.prefix}/.*",
 )
 
 app.include_router(root.router)
 app.include_router(healthz.router)
+app.include_router(ping.router)

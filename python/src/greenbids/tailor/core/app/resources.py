@@ -7,7 +7,7 @@ import time
 import io
 
 import pydantic
-from greenbids.tailor.core import models
+from greenbids.tailor.core import models, version
 
 _logger = logging.getLogger(__name__)
 
@@ -60,6 +60,11 @@ class AppResources(pydantic.BaseModel):
     @property
     def uptime_second(self) -> float:
         return time.monotonic() - self._start_monotonic
+
+    @pydantic.computed_field
+    @property
+    def core_version(self) -> str:
+        return version
 
     def refresh_model(self) -> "AppResources":
         buf = io.BytesIO()
