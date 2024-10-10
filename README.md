@@ -97,7 +97,7 @@ sequenceDiagram
         opt if fabric.prediction. isExploration
             rect rgba(30, 183, 136, 0.66)
                 SSP -)+ GB: POST /
-                GB -->>- SSP: 200 OK
+                GB -->>- SSP: 204 No Response
             end
         end
 
@@ -110,7 +110,7 @@ sequenceDiagram
 
 ### 🏋️ Example
 
-An integration example is provided through the [`locustfiles/root.py`](https://github.com/greenbids/greenbids-tailor-external/blob/main/locustfiles/root.py#L12).
+An integration example is provided through the [`locustfiles/rtb.py`](https://github.com/greenbids/greenbids-tailor-external/blob/main/locustfiles/rtb.py#L8).
 It highlights when the Greenbids Tailor service must be called during the ad request processing.
 It also propose an example of features to pass in the payload (only for demonstrative purpose).
 
@@ -128,24 +128,24 @@ It will print you a summary of the test.
 The following has been obtained on a laptop (AMD Ryzen 7 PRO, 16GB RAM) running the Python executable:
 
 ```text
-Type     Name                   # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s
---------|---------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
-POST                             56579     0(0.00%) |      1       0     123      1 |  462.71        0.00
-PUT                             282236     0(0.00%) |      1       0     140      2 | 2308.18        0.00
-GET      /healthz/liveness           4     0(0.00%) |     12      10      14     11 |    0.03        0.00
-GET      /healthz/readiness          3     0(0.00%) |      9       7      10      9 |    0.02        0.00
-GET      /healthz/startup            4     0(0.00%) |      9       6      13      8 |    0.03        0.00
---------|---------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
-         Aggregated             338826     0(0.00%) |      1       0     140      2 | 2770.99        0.00
+Type     Name                  # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s
+--------|--------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+POST                            16991     0(0.00%) |      4       0     125      5 |  386.06        0.00
+PUT                             84973     0(0.00%) |      4       0     125      4 | 1930.70        0.00
+GET      /healthz/liveness          1     0(0.00%) |     13      13      13     13 |    0.02        0.00
+GET      /healthz/readiness         2     0(0.00%) |      9       7      10      7 |    0.05        0.00
+GET      /healthz/startup           1     0(0.00%) |      9       9       9      9 |    0.02        0.00
+--------|--------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+         Aggregated            101968     0(0.00%) |      4       0     125      4 | 2316.85        0.00
 
 Response time percentiles (approximated)
-Type     Name                           50%    66%    75%    80%    90%    95%    98%    99%  99.9% 99.99%   100% # reqs
---------|-------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
-POST                                      1      2      2      2      3      4      5      5      7     10    120  56579
-PUT                                       2      2      2      3      3      4      5      5      7    100    140 282236
-GET      /healthz/liveness               14     14     14     14     14     14     14     14     14     14     14      4
-GET      /healthz/readiness               9      9     11     11     11     11     11     11     11     11     11      3
-GET      /healthz/startup                10     10     14     14     14     14     14     14     14     14     14      4
---------|-------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
-         Aggregated                       2      2      2      3      3      4      5      5      7    100    140 338826
+Type     Name                      50%    66%    75%    80%    90%    95%    98%    99%  99.9% 99.99%   100% # reqs
+--------|--------------------|--------|------|------|------|------|------|------|------|------|------|------|------
+POST                                 5      5      6      6      6      7      7      8      9    120    130  16991
+PUT                                  4      5      5      5      6      6      7      7      9     99    130  84973
+GET      /healthz/liveness          13     13     13     13     13     13     13     13     13     13     13      1
+GET      /healthz/readiness         11     11     11     11     11     11     11     11     11     11     11      2
+GET      /healthz/startup            9      9      9      9      9      9      9      9      9      9      9      1
+--------|--------------------|--------|------|------|------|------|------|------|------|------|------|------|------
+         Aggregated                  4      5      5      5      6      6      7      7      9     99    130 101968
 ```
