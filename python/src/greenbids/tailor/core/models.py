@@ -46,13 +46,15 @@ class NullModel(Model):
         fabrics: list[fabric.Fabric],
     ) -> list[fabric.Fabric]:
         prediction = fabric.Prediction(score=1, is_exploration=(random.random() < 0.2))
-        return [f.model_copy(update=dict(prediction=prediction)) for f in fabrics]
+        for f in fabrics:
+            f["prediction"] = prediction
+        return fabrics
 
     def report_buyers_status(
         self,
         fabrics: list[fabric.Fabric],
     ) -> list[fabric.Fabric]:
-        self._logger.debug([f.feature_map.root for f in fabrics[:1]])
+        self._logger.debug([f.get("feature_map", {}) for f in fabrics[:1]])
         return fabrics
 
 
