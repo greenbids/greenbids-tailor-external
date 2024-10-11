@@ -69,6 +69,7 @@ jobs:
             url="\$(curl https://${{ github.ref_type != 'tag' && 'test.' || '' }}pypi.org/simple/greenbids-tailor/ | grep greenbids_tailor-${{ inputs.app-version }} | sed -Ee 's/.*href="([^"]+)".*/\\1/')"
             if [ "\$url" ]; then
               curl -I "\$url" | grep -q -E '^HTTP.*200' && exit 0
+            fi
             try=\$(( try - 1 ))
           done
           exit 1
