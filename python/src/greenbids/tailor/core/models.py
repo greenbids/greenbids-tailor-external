@@ -16,15 +16,15 @@ class Model(ABC):
     @abstractmethod
     def get_buyers_probabilities(
         self,
-        fabrics: list[fabric.Fabric],
-    ) -> list[fabric.Fabric]:
+        fabrics: list[fabric.PredictionInput],
+    ) -> list[fabric.PredictionOutput]:
         raise NotImplementedError
 
     @abstractmethod
     def report_buyers_status(
         self,
-        fabrics: list[fabric.Fabric],
-    ) -> list[fabric.Fabric]:
+        fabrics: list[fabric.ReportInput],
+    ) -> None:
         raise NotImplementedError
 
     def dump(self, fp: typing.BinaryIO) -> None:
@@ -43,19 +43,19 @@ class NullModel(Model):
 
     def get_buyers_probabilities(
         self,
-        fabrics: list[fabric.Fabric],
-    ) -> list[fabric.Fabric]:
+        fabrics: list[fabric.PredictionInput],
+    ) -> list[fabric.PredictionOutput]:
         prediction = fabric.Prediction(score=1, is_exploration=(random.random() < 0.2))
-        for f in fabrics:
-            f["prediction"] = prediction
-        return fabrics
+        return [
+            fabric.PredictionOutput(feature_map=f["feature_map"], prediction=prediction)
+            for f in fabrics
+        ]
 
     def report_buyers_status(
         self,
-        fabrics: list[fabric.Fabric],
-    ) -> list[fabric.Fabric]:
+        fabrics: list[fabric.ReportInput],
+    ) -> None:
         self._logger.debug([f.get("feature_map", {}) for f in fabrics[:1]])
-        return fabrics
 
 
 ENTRY_POINTS_GROUP = "greenbids-tailor-models"

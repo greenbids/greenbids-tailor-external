@@ -8,6 +8,12 @@ _BaseConfig = pydantic.ConfigDict(
     populate_by_name=True,
     use_attribute_docstrings=True,
 )
+class _BaseTypedDict(typing.TypedDict):
+    __pydantic_config__ = _BaseConfig  # type: ignore
+
+
+FeatureMap: typing.TypeAlias = dict[str, typing.Any]
+
 
 class Prediction(pydantic.BaseModel):
     model_config = _BaseConfig
@@ -27,22 +33,22 @@ class Prediction(pydantic.BaseModel):
         return self.is_exploration or (self.score > self.threshold)
 
 
-class GroundTruth(typing.TypedDict):
-    __pydantic_config__ = _BaseConfig  # type: ignore
-
+class GroundTruth(_BaseTypedDict):
     """Actual outcome of the opportunity"""
     has_response: typing.Annotated[bool, pydantic.Field(default=True)]
     """Did this opportunity lead to a valid buyer response?"""
 
 
-class Fabric(typing.TypedDict, total=False):
-    """Main entity used to tailor the traffic.
+class ReportInput(_BaseTypedDict):
+    feature_map: FeatureMap
+    prediction: Prediction
+    ground_truth: GroundTruth
 
-    All fields are optional when irrelevant.
-    """
 
-    __pydantic_config__ = _BaseConfig  # type: ignore
+class PredictionInput(_BaseTypedDict):
+    feature_map: FeatureMap
 
-    feature_map: dict[str, typing.Any]
-    prediction: Prediction | None
-    ground_truth: GroundTruth | None
+
+class PredictionOutput(_BaseTypedDict):
+    feature_map: FeatureMap
+    prediction: Prediction
