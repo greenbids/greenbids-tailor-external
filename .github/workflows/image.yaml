@@ -61,18 +61,18 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Wait for package availability
         if: ${{ github.event_name == 'push' }}
-        run: |
-          bash -xc '
+        run: |2
+          bash -sx <<EOT
           try=10
-          while [ "$try" -gt 0 ]; do
+          while [ "\$try" -gt 0 ]; do
             sleep 5
-            url="$(curl https://${{ github.ref_type != 'tag' && 'test.' || '' }}pypi.org/simple/greenbids-tailor/ | grep greenbids_tailor-${{ inputs.app-version }} | sed -Ee 's/.*href="([^"]+)".*/\1/')"
-            if [ "$url" ]; then
-              curl -I "$url" | grep -q -E '^HTTP.*200' && exit 0
-            try=$(( try - 1 ))
+            url="\$(curl https://${{ github.ref_type != 'tag' && 'test.' || '' }}pypi.org/simple/greenbids-tailor/ | grep greenbids_tailor-${{ inputs.app-version }} | sed -Ee 's/.*href="([^"]+)".*/\\1/')"
+            if [ "\$url" ]; then
+              curl -I "\$url" | grep -q -E '^HTTP.*200' && exit 0
+            try=\$(( try - 1 ))
           done
           exit 1
-          '
+          EOT
 
       - name: Build and push Docker image
         id: push
