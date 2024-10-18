@@ -32,6 +32,9 @@ greenbids-tailor = "greenbids.tailor.core.__main__:run"
 [project.entry-points.greenbids-tailor-models]
 None = 'greenbids.tailor.core.models'
 
+[tool.hatch.build]
+directory = "dist/greenbids-tailor"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/greenbids"]
 
