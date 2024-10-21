@@ -1,23 +1,23 @@
+import typing
 import pydantic
 import pydantic.alias_generators
 
 
-class _CamelSerialized(pydantic.BaseModel):
-    model_config = pydantic.ConfigDict(
-        alias_generator=pydantic.alias_generators.to_camel,
-        populate_by_name=True,
-        use_attribute_docstrings=True,
-    )
+_BaseConfig = pydantic.ConfigDict(
+    alias_generator=pydantic.alias_generators.to_camel,
+    populate_by_name=True,
+    use_attribute_docstrings=True,
+)
+class _BaseTypedDict(typing.TypedDict):
+    __pydantic_config__ = _BaseConfig  # type: ignore
 
 
-class FeatureMap(_CamelSerialized, pydantic.RootModel):
-    """Mapping describing the current opportunity."""
-    root: dict[str, bool | int | float | bytes | str] = pydantic.Field(
-        default_factory=dict
-    )
+FeatureMap: typing.TypeAlias = dict[str, typing.Any]
 
 
-class Prediction(_CamelSerialized):
+class Prediction(pydantic.BaseModel):
+    model_config = _BaseConfig
+
     """Result of the shaping process."""
     score: float = -1
     """Confidence score returned by the model"""
@@ -33,18 +33,22 @@ class Prediction(_CamelSerialized):
         return self.is_exploration or (self.score > self.threshold)
 
 
-class GroundTruth(_CamelSerialized):
+class GroundTruth(_BaseTypedDict):
     """Actual outcome of the opportunity"""
-    has_response: bool = True
+    has_response: typing.Annotated[bool, pydantic.Field(default=True)]
     """Did this opportunity lead to a valid buyer response?"""
 
 
-class Fabric(_CamelSerialized):
-    """Main entity used to tailor the traffic.
+class ReportInput(_BaseTypedDict):
+    feature_map: FeatureMap
+    prediction: Prediction
+    ground_truth: GroundTruth
 
-    All fields are optional when irrelevant.
-    """
 
-    feature_map: FeatureMap = pydantic.Field(default_factory=FeatureMap)
-    prediction: Prediction = pydantic.Field(default_factory=Prediction)
-    ground_truth: GroundTruth = pydantic.Field(default_factory=GroundTruth)
+class PredictionInput(_BaseTypedDict):
+    feature_map: FeatureMap
+
+
+class PredictionOutput(_BaseTypedDict):
+    feature_map: FeatureMap
+    prediction: Prediction
