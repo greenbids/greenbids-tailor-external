@@ -23,9 +23,9 @@ import prometheus_client
 
 from .logging import RateLimitingFilter
 
-metric_readers: list[MetricReader] = [
-    PeriodicExportingMetricReader(OTLPMetricExporter())
-]
+
+_OTLP_METRICS_READER = PeriodicExportingMetricReader(OTLPMetricExporter())
+metric_readers: list[MetricReader] = [_OTLP_METRICS_READER]
 if os.environ.get("OTEL_EXPORTER_PROMETHEUS_ENABLED"):
     prometheus_client.start_http_server(
         port=int(os.environ.get("OTEL_EXPORTER_PROMETHEUS_PORT", 9464))
@@ -33,11 +33,13 @@ if os.environ.get("OTEL_EXPORTER_PROMETHEUS_ENABLED"):
     metric_readers.append(PrometheusMetricReader())
 meter_provider = metrics.MeterProvider(metric_readers=metric_readers)
 
+_OTLP_TRACES_PROCESSOR = BatchSpanProcessor(OTLPSpanExporter())
 tracer_provider = trace.TracerProvider()
-tracer_provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter()))
+tracer_provider.add_span_processor(_OTLP_TRACES_PROCESSOR)
 
+_OTLP_LOGS_PROCESSOR = BatchLogRecordProcessor(OTLPLogExporter())
 logger_provider = logs.LoggerProvider()
-logger_provider.add_log_record_processor(BatchLogRecordProcessor(OTLPLogExporter()))
+logger_provider.add_log_record_processor(_OTLP_LOGS_PROCESSOR)
 
 handler = logs.LoggingHandler(
     level=logging.getLevelNamesMapping()[
