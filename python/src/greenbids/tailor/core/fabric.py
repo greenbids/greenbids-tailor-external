@@ -1,3 +1,5 @@
+import uuid
+
 import pydantic
 import pydantic.alias_generators
 
@@ -23,8 +25,35 @@ class Prediction(_CamelSerialized):
     """Confidence score returned by the model"""
     threshold: float = -1
     """Confidence threshold used to binarize the outcome"""
-    is_exploration: bool = True
-    """Should this opportunity be used as exploration traffic"""
+    tailor_id: uuid.UUID = pydantic.Field(default_factory=uuid.uuid4)
+    """ID identifying this call"""
+    exploration_rate: float = 1
+    """Which proportion of requests will be exploration ones"""
+    training_rate: float = 0
+    """Which proportion of requests will be used for training"""
+
+    def _sample(self, rate: float) -> bool:
+        randomness_value = self.tailor_id.node
+        threshold_value = int(0x1_0000_0000_0000 * (1 - rate))
+        return randomness_value >= threshold_value
+
+    @pydantic.computed_field
+    @property
+    def is_exploration(self) -> bool:
+        """Should this opportunity be used as exploration traffic"""
+        try:
+            return self._sample(self.exploration_rate)
+        except ValueError:
+            return True
+
+    @pydantic.computed_field
+    @property
+    def is_training(self) -> bool:
+        """Should this opportunity be used to train the model"""
+        try:
+            return self._sample(self.training_rate)
+        except ValueError:
+            return False
 
     @pydantic.computed_field
     @property
