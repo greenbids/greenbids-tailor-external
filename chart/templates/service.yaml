@@ -11,5 +11,11 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    {{- if .Values.env.OTEL_EXPORTER_PROMETHEUS_ENABLED }}
+    - port: {{ .Values.env.OTEL_EXPORTER_PROMETHEUS_PORT | default 9464 }}
+      targetPort: http
+      protocol: TCP
+      name: prom
+    {{- end }}
   selector:
     {{- include "greenbids-tailor.selectorLabels" . | nindent 4 }}

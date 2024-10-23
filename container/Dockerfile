@@ -11,7 +11,10 @@ RUN apt-get update && \
 
 RUN useradd --create-home greenbids
 
+# Main service port
 EXPOSE 8000
+# Prometheus telemetry port
+EXPOSE 9464
 
 ENV WEB_CONCURRENCY=4
 ENV OTEL_SERVICE_NAME="greenbids-tailor"
