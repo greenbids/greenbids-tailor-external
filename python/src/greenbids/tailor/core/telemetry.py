@@ -10,7 +10,7 @@ from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
     OTLPSpanExporter,
 )
 from opentelemetry.sdk import _logs as logs
-from opentelemetry.sdk import metrics, trace
+from opentelemetry.sdk import metrics, trace, resources
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from opentelemetry.sdk.metrics.export import (
     MetricReader,
@@ -22,7 +22,14 @@ import prometheus_client
 
 
 from .logging import RateLimitingFilter
+from greenbids.tailor.core import version
 
+RESOURCE = resources.Resource.create(
+    {
+        resources.SERVICE_INSTANCE_ID: str(os.environ["GREENBIDS_TAILOR_API_USER"]),
+        resources.SERVICE_VERSION: version,
+    }
+)
 
 _OTLP_METRICS_READER = PeriodicExportingMetricReader(OTLPMetricExporter())
 metric_readers: list[MetricReader] = [_OTLP_METRICS_READER]
@@ -31,14 +38,14 @@ if os.environ.get("OTEL_EXPORTER_PROMETHEUS_ENABLED"):
         port=int(os.environ.get("OTEL_EXPORTER_PROMETHEUS_PORT", 9464))
     )
     metric_readers.append(PrometheusMetricReader())
-meter_provider = metrics.MeterProvider(metric_readers=metric_readers)
+meter_provider = metrics.MeterProvider(metric_readers=metric_readers, resource=RESOURCE)
 
 _OTLP_TRACES_PROCESSOR = BatchSpanProcessor(OTLPSpanExporter())
-tracer_provider = trace.TracerProvider()
+tracer_provider = trace.TracerProvider(resource=RESOURCE)
 tracer_provider.add_span_processor(_OTLP_TRACES_PROCESSOR)
 
 _OTLP_LOGS_PROCESSOR = BatchLogRecordProcessor(OTLPLogExporter())
-logger_provider = logs.LoggerProvider()
+logger_provider = logs.LoggerProvider(resource=RESOURCE)
 logger_provider.add_log_record_processor(_OTLP_LOGS_PROCESSOR)
 
 handler = logs.LoggingHandler(

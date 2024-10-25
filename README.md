@@ -59,12 +59,15 @@ Some environment variables may be used to change the default configuration of th
 
 | Variable                         | Description                                                                           | Default                             |
 |----------------------------------|---------------------------------------------------------------------------------------|-------------------------------------|
+| GREENBIDS_TAILOR_API_USER        | **Required** User name used to authenticate to backend                                |                                     |
+|----------------------------------|---------------------------------------------------------------------------------------|-------------------------------------|
 | OTEL_EXPORTER_PROMETHEUS_ENABLED | Enable the Prometheus exporter to expose service metrics (set to any value to enable) |                                     |
 | OTEL_EXPORTER_PROMETHEUS_PORT    | Port on which to expose Prometheus metrics                                            | 9464                                |
 | OTEL_TRACES_SAMPLER_ARG          | Telemetry traces sampling                                                             | 1, 0.0001 in containers             |
 | WEB_CONCURRENCY                  | How many worker processes to launch                                                   | 1, 4 in Docker, 1 in the Helm chart |
 | GREENBIDS_TAILOR_LOG_LEVEL       | Log level of the Greenbids Tailor service                                             | INFO                                |
 | GREENBIDS_TAILOR_PROFILE         | Filename to dump CProfile trace. Unset value disable any profiling.                   |                                     |
+| GREENBIDS_TAILOR_API_KEY         | Key used to authenticate to backend. Required to download dedicated model.            |                                     |
 
 ## 🍱 Integration
 

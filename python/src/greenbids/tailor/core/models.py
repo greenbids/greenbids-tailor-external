@@ -62,7 +62,7 @@ ENTRY_POINTS_GROUP = "greenbids-tailor-models"
 def download(target: str):
     index_url = urlsplit(os.environ.get("GREENBIDS_TAILOR_INDEX_URL", ""))
     index_url._replace(
-        username=str(os.environ.get("GREENBIDS_TAILOR_MODEL_NAME")),
+        username=str(os.environ.get("GREENBIDS_TAILOR_API_USER")),
         password=str(os.environ.get("GREENBIDS_TAILOR_API_KEY")),
     )
     args = [
