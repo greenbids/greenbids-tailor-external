@@ -4,6 +4,7 @@ import pickle
 import subprocess
 import typing
 from abc import ABC, abstractmethod
+from urllib.parse import urlsplit
 
 from greenbids.tailor.core import fabric
 
@@ -59,16 +60,23 @@ ENTRY_POINTS_GROUP = "greenbids-tailor-models"
 
 
 def download(target: str):
-    subprocess.check_output(
-        [
-            "pip",
-            "install",
-            "--upgrade",
-            "--index-url",
-            os.environ.get("GREENBIDS_TAILOR_INDEX_URL", ""),
-            target,
-        ]
+    index_url = urlsplit(os.environ.get("GREENBIDS_TAILOR_INDEX_URL", ""))
+    index_url._replace(
+        username=str(os.environ.get("GREENBIDS_TAILOR_MODEL_NAME")),
+        password=str(os.environ.get("GREENBIDS_TAILOR_API_KEY")),
     )
+    args = [
+        "pip",
+        "install",
+        "--upgrade",
+        "--index-url",
+        index_url.geturl(),
+        "--extra-index-url",
+        "https://pypi.org/simple",
+        target,
+    ]
+    _logger.info("Downloading a package from private registry: %s", args)
+    _logger.debug(subprocess.check_output(args).decode())
 
 
 def get_instance(**_):
