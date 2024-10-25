@@ -1,7 +1,6 @@
 import logging
 import os
 import pickle
-import random
 import subprocess
 import typing
 from abc import ABC, abstractmethod
@@ -45,7 +44,7 @@ class NullModel(Model):
         self,
         fabrics: list[fabric.Fabric],
     ) -> list[fabric.Fabric]:
-        prediction = fabric.Prediction(score=1, is_exploration=(random.random() < 0.2))
+        prediction = fabric.Prediction(exploration_rate=0.2)
         return [f.model_copy(update=dict(prediction=prediction)) for f in fabrics]
 
     def report_buyers_status(
