@@ -1,3 +1,4 @@
+from importlib import metadata
 import logging
 import os
 import pickle
@@ -59,11 +60,33 @@ class NullModel(Model):
 ENTRY_POINTS_GROUP = "greenbids-tailor-models"
 
 
-def download(target: str):
+def load(gb_model_name: str, **kwargs):
+    if gb_model_name is str(None):
+        _logger.debug("No model to download")
+    else:
+        _download(gb_model_name)
+
+    return (
+        metadata.entry_points(group=ENTRY_POINTS_GROUP)[gb_model_name]
+        .load()
+        .get_instance(**kwargs)
+    )
+
+
+def _download(target: str):
+    """Download a model from private Python registry
+
+    Args:
+        target (str): Simple name of the model
+    """
     index_url = urlsplit(os.environ.get("GREENBIDS_TAILOR_INDEX_URL", ""))
-    index_url._replace(
-        username=str(os.environ.get("GREENBIDS_TAILOR_API_USER")),
-        password=str(os.environ.get("GREENBIDS_TAILOR_API_KEY")),
+    netloc = index_url.netloc.split("@")[-1]
+    index_url = index_url._replace(
+        netloc="{}:{}@{}".format(
+            os.environ.get("GREENBIDS_TAILOR_API_USER", "nobody"),
+            os.environ.get("GREENBIDS_TAILOR_API_KEY", ""),
+            netloc,
+        )
     )
     args = [
         "pip",
@@ -73,7 +96,7 @@ def download(target: str):
         index_url.geturl(),
         "--extra-index-url",
         "https://pypi.org/simple",
-        target,
+        f"greenbids-tailor-models-{target}",
     ]
     _logger.info("Downloading a package from private registry: %s", args)
     _logger.debug(subprocess.check_output(args).decode())

@@ -3,7 +3,7 @@ import logging
 from importlib.metadata import distribution
 
 from fastapi import FastAPI
-from greenbids.tailor.core import models, telemetry
+from greenbids.tailor.core import telemetry
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from . import profiler, resources, tasks
@@ -21,7 +21,7 @@ async def _lifespan(app: FastAPI):
         seconds=app_resources.gb_model_refresh_period.total_seconds(),
         wait_first=True,
         logger=_logger.getChild("model_reload"),
-    )(_periodic_model_reload)
+    )(app_resources.refresh_model)
     with profiler.profile():
         yield
 
@@ -33,16 +33,6 @@ def _setup_logging():
     logging.root.addHandler(stderr_handler)
     logging.root.addHandler(telemetry.handler)
     logging.getLogger("uvicorn.access").disabled = True
-
-
-def _periodic_model_reload():
-    app_resources = resources.get_instance()
-    if app_resources.gb_model_name is str(None):
-        _logger.debug("Nothing to reload")
-        return
-    models.download(f"greenbids-tailor-models-{app_resources.gb_model_name}")
-    resources.get_instance().refresh_model()
-
 
 pkg_dist = distribution("greenbids-tailor")
 app = FastAPI(
