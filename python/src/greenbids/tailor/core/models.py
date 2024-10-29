@@ -61,7 +61,10 @@ ENTRY_POINTS_GROUP = "greenbids-tailor-models"
 
 
 def load(gb_model_name: str, **kwargs):
-    if gb_model_name is str(None):
+    if (
+        gb_model_name is str(None)
+        or os.environ.get("GREENBIDS_TAILOR_DOWNLOAD_DISABLED", "").lower() == "true"
+    ):
         _logger.debug("No model to download")
     else:
         _download(gb_model_name)
@@ -98,7 +101,6 @@ def _download(target: str):
         "https://pypi.org/simple",
         f"greenbids-tailor-models-{target}",
     ]
-    _logger.info("Downloading a package from private registry: %s", args)
     _logger.debug(subprocess.check_output(args).decode())
 
 

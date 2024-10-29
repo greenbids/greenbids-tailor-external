@@ -9,6 +9,6 @@ except ImportError:
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.addHandler(logging.NullHandler())
-LOGGER.setLevel(os.environ.get("GREENBIDS_TAILOR_LOG_LEVEL", "INFO"))
+LOGGER.setLevel(os.environ.get("GREENBIDS_TAILOR_LOG_LEVEL", "INFO").upper())
 
 __all__ = ["version", "version_tuple", "LOGGER"]
