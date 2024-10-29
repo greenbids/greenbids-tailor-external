@@ -26,7 +26,9 @@ from greenbids.tailor.core import version
 
 RESOURCE = resources.Resource.create(
     {
-        resources.SERVICE_INSTANCE_ID: str(os.environ["GREENBIDS_TAILOR_API_USER"]),
+        resources.SERVICE_INSTANCE_ID: str(
+            os.environ.get("GREENBIDS_TAILOR_API_USER", "Unknown")
+        ),
         resources.SERVICE_VERSION: version,
     }
 )
