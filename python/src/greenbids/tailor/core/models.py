@@ -46,7 +46,11 @@ class NullModel(Model):
         self,
         fabrics: dict[str, fabric.Fabric],
     ) -> dict[str, fabric.Fabric]:
-        prediction = fabric.Prediction(exploration_rate=0.2)
+        prediction = fabric.Prediction(
+            exploration_rate=float(
+                os.environ.get("GREENBIDS_TAILOR_MODELS_NONE_EXPLORATION_RATE", 0.2)
+            )
+        )
         return {
             k: f.model_copy(update=dict(prediction=prediction))
             for k, f in fabrics.items()
