@@ -16,8 +16,8 @@ class Rtb(locust.FastHttpUser):
         ad_request = AdRequestFactory.build()
 
         # Build a list of features for each bidder in the ad request
-        feature_maps = [
-            {
+        fabrics = {
+            bidder["name"]: {
                 "featureMap": {
                     "bidder": bidder["name"],
                     "userSynced": bidder.get("user_id") is not None,
@@ -29,12 +29,14 @@ class Rtb(locust.FastHttpUser):
                 }
             }
             for bidder in ad_request["bidders"]
-        ]
+        }
         # Do a single call to the Greenbids Tailor service
-        fabrics = self.client.put("", json=feature_maps).json()
+        fabrics = self.client.put("", json=fabrics).json()
+        # Prepare a flag to know if you must make the POST call
+        is_exploration = False
 
         # Do your regular calls here to send a bid requests to the selected bidders
-        for fabric in fabrics:
+        for fabric in fabrics.values():
             if not fabric["prediction"]["shouldSend"]:
                 # Skip any bidder that as too few response probability
                 continue
@@ -49,7 +51,9 @@ class Rtb(locust.FastHttpUser):
             # Store the outcome in the fabric
             fabric["groundTruth"] = dict(hasResponse=hasResponse)
 
+            is_exploration = is_exploration or fabric["prediction"]["isExploration"]
+
         # For a sample of calls, report the outcomes to the Greenbids Tailor POST endpoint
-        if fabrics[0]["prediction"]["isExploration"]:
+        if is_exploration:
             # You may use a fire-and-forget mechanism
             self.client.post("", json=fabrics)

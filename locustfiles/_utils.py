@@ -25,6 +25,18 @@ class AdRequest(typing.TypedDict):
     """Device used by the user visiting the publisher's site"""
 
 
+class BidderFactory(polyfactory.factories.TypedDictFactory[Bidder]):
+    __set_as_default_factory_for_type__ = True
+    _names = [
+        polyfactory.factories.TypedDictFactory.__faker__.unique.company()
+        for _ in range(20)
+    ]
+
+    @classmethod
+    def name(cls) -> str:
+        return str(cls.__random__.choice(cls._names))
+
+
 class AdRequestFactory(polyfactory.factories.TypedDictFactory[AdRequest]):
     """Utility object to generate random AdRequests"""
 

@@ -10,8 +10,8 @@ class Root(locust.FastHttpUser):
     def on_start(self) -> None:
         ad_request = AdRequestFactory.build()
 
-        self.fabrics = [
-            {
+        self.fabrics = {
+            bidder["name"]: {
                 "featureMap": {
                     "bidder": bidder["name"],
                     "userSynced": bidder.get("user_id") is not None,
@@ -22,7 +22,7 @@ class Root(locust.FastHttpUser):
                 "groundTruth": {"hasResponse": True},
             }
             for bidder in ad_request["bidders"]
-        ]
+        }
         return super().on_start()
 
     @locust.task(100)

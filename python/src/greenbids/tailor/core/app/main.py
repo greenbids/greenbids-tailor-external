@@ -47,6 +47,7 @@ FastAPIInstrumentor.instrument_app(
     tracer_provider=telemetry.tracer_provider,
     meter_provider=telemetry.meter_provider,
     excluded_urls=f"{healthz.router.prefix}/.*",
+    http_capture_headers_server_response=["greenbids-tailor-.*"],
 )
 
 app.include_router(root.router)

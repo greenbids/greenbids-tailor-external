@@ -22,14 +22,14 @@ import prometheus_client
 
 
 from .logging import RateLimitingFilter
-from greenbids.tailor.core import version
+from greenbids.tailor import core
 
 RESOURCE = resources.Resource.create(
     {
         resources.SERVICE_INSTANCE_ID: str(
             os.environ.get("GREENBIDS_TAILOR_API_USER", "Unknown")
         ),
-        resources.SERVICE_VERSION: version,
+        resources.SERVICE_VERSION: core.version,
     }
 )
 
@@ -41,10 +41,13 @@ if os.environ.get("OTEL_EXPORTER_PROMETHEUS_ENABLED"):
     )
     metric_readers.append(PrometheusMetricReader())
 meter_provider = metrics.MeterProvider(metric_readers=metric_readers, resource=RESOURCE)
+_instrumentation_name = ".".join(core.__name__.split(".")[:-1])
+meter = meter_provider.get_meter(_instrumentation_name, core.version)
 
 _OTLP_TRACES_PROCESSOR = BatchSpanProcessor(OTLPSpanExporter())
 tracer_provider = trace.TracerProvider(resource=RESOURCE)
 tracer_provider.add_span_processor(_OTLP_TRACES_PROCESSOR)
+tracer = tracer_provider.get_tracer(_instrumentation_name, core.version)
 
 _OTLP_LOGS_PROCESSOR = BatchLogRecordProcessor(OTLPLogExporter())
 logger_provider = logs.LoggerProvider(resource=RESOURCE)
