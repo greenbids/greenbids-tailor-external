@@ -59,3 +59,4 @@ jobs:
         with:
           repository-url: ${{ env.repository_url }}
           packages-dir: dist/greenbids-tailor
+          attestations: false
