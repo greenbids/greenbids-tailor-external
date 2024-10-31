@@ -62,7 +62,7 @@ ENTRY_POINTS_GROUP = "greenbids-tailor-models"
 
 def load(gb_model_name: str, **kwargs):
     if (
-        gb_model_name is str(None)
+        gb_model_name == str(None)
         or os.environ.get("GREENBIDS_TAILOR_DOWNLOAD_DISABLED", "").lower() == "true"
     ):
         _logger.debug("No model to download")
