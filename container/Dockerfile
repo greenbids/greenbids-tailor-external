@@ -19,9 +19,10 @@ EXPOSE 9464
 ENV WEB_CONCURRENCY=4
 ENV OTEL_SERVICE_NAME="greenbids-tailor"
 ENV OTEL_TRACES_SAMPLER=parentbased_traceidratio
-ENV OTEL_TRACES_SAMPLER_ARG=0.0001
+ENV OTEL_TRACES_SAMPLER_ARG=0.00001
 ENV OTEL_EXPORTER_OTLP_ENDPOINT="https://tailor.greenbids.ai/"
 ENV OTEL_EXPORTER_OTLP_HEADERS="Greenbids-Tailor=true"
+ENV GREENBIDS_TAILOR_INDEX_URL="https://python-tailor.greenbids.ai/python/"
 
 ENTRYPOINT ["greenbids-tailor"]
 CMD ["run"]

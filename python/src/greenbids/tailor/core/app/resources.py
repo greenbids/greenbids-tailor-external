@@ -1,6 +1,5 @@
 import datetime
 import functools
-from importlib import metadata
 import logging
 import os
 import time
@@ -45,11 +44,7 @@ class AppResources(pydantic.BaseModel):
 
     def __init__(self, **data):
         super().__init__(**data)
-        self._gb_model = (
-            metadata.entry_points(group=models.ENTRY_POINTS_GROUP)[self.gb_model_name]
-            .load()
-            .get_instance()
-        )
+        self._gb_model = models.load(self.gb_model_name)
         _logger.info(self.model_dump_json())
 
     @property
@@ -66,16 +61,11 @@ class AppResources(pydantic.BaseModel):
     def core_version(self) -> str:
         return version
 
-    def refresh_model(self) -> "AppResources":
+    def refresh_model(self) -> None:
         buf = io.BytesIO()
         self.gb_model.dump(buf)
         buf.seek(0)
-        self._gb_model = (
-            metadata.entry_points(group=models.ENTRY_POINTS_GROUP)[self.gb_model_name]
-            .load()
-            .get_instance(fp=buf)
-        )
-        return self
+        self._gb_model = models.load(self.gb_model_name, fp=buf)
 
 
 @functools.lru_cache(maxsize=1)

@@ -59,7 +59,7 @@ class Prediction(_CamelSerialized):
     @property
     def should_send(self) -> bool:
         """Should this opportunity be forwarded to the buyer?"""
-        return self.is_exploration or (self.score > self.threshold)
+        return self.is_exploration or (self.score >= self.threshold)
 
 
 class GroundTruth(_CamelSerialized):
