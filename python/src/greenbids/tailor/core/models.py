@@ -1,4 +1,5 @@
 from importlib import metadata
+import importlib
 import logging
 import os
 import pickle
@@ -68,6 +69,7 @@ def load(gb_model_name: str, **kwargs):
         _logger.debug("No model to download")
     else:
         _download(gb_model_name)
+        importlib.invalidate_caches()
 
     return (
         metadata.entry_points(group=ENTRY_POINTS_GROUP)[gb_model_name]

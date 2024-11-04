@@ -10,6 +10,7 @@ RUN apt-get update && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN useradd --create-home greenbids
+ENV PYTHONPATH=/home/greenbids/.local/lib/python3.12/site-packages/
 
 # Main service port
 EXPOSE 8000
