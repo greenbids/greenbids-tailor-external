@@ -17,11 +17,10 @@ async def _lifespan(app: FastAPI):
     if resources.get_instance.cache_info().currsize > 0:
         _logger.warning("A resource object was initialized before app startup")
     app_resources = resources.get_instance()
-    tasks.repeat_every(
+    await tasks.repeat_every(
         seconds=app_resources.gb_model_refresh_period.total_seconds(),
-        wait_first=True,
         logger=_logger.getChild("model_reload"),
-    )(app_resources.refresh_model)
+    )(app_resources.refresh_model)()
     with profiler.profile():
         yield
 

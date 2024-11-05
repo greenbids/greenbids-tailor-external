@@ -24,6 +24,9 @@ def _default_refresh_period() -> datetime.timedelta:
     )
 
 
+class ModelNotReady(AttributeError): ...
+
+
 class AppResources(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
@@ -40,15 +43,16 @@ class AppResources(pydantic.BaseModel):
         default_factory=lambda: os.environ.get("GREENBIDS_TAILOR_PROFILE", "")
     )
     _start_monotonic: float = pydantic.PrivateAttr(default_factory=time.monotonic)
-    _gb_model: models.Model
+    _gb_model: models.Model | None = None
 
     def __init__(self, **data):
         super().__init__(**data)
-        self._gb_model = models.load(self.gb_model_name)
         _logger.info(self.model_dump_json())
 
     @property
     def gb_model(self) -> models.Model:
+        if self._gb_model is None:
+            raise ModelNotReady(name=f"gb_model({self.gb_model_name})", obj=self)
         return self._gb_model
 
     @pydantic.computed_field
@@ -61,11 +65,21 @@ class AppResources(pydantic.BaseModel):
     def core_version(self) -> str:
         return version
 
+    @pydantic.computed_field
+    @property
+    def is_ready(self) -> bool:
+        return self._gb_model is not None
+
     def refresh_model(self) -> None:
-        buf = io.BytesIO()
-        self.gb_model.dump(buf)
-        buf.seek(0)
-        self._gb_model = models.load(self.gb_model_name, fp=buf)
+        kwargs = {}
+        try:
+            buf = io.BytesIO()
+            self.gb_model.dump(buf)
+            buf.seek(0)
+            kwargs["fp"] = buf
+        except ModelNotReady:
+            pass
+        self._gb_model = models.load(self.gb_model_name, **kwargs)
 
 
 @functools.lru_cache(maxsize=1)
