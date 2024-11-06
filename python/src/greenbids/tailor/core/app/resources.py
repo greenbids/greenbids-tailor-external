@@ -24,7 +24,10 @@ def _default_refresh_period() -> datetime.timedelta:
     )
 
 
-class ModelNotReady(AttributeError): ...
+class ModelNotReady(AttributeError):
+    def __init__(self, *args: object, model_name: str, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.model_name = model_name
 
 
 class AppResources(pydantic.BaseModel):
@@ -52,7 +55,9 @@ class AppResources(pydantic.BaseModel):
     @property
     def gb_model(self) -> models.Model:
         if self._gb_model is None:
-            raise ModelNotReady(name=f"gb_model({self.gb_model_name})", obj=self)
+            raise ModelNotReady(
+                model_name=self.gb_model_name, name="gb_model", obj=self
+            )
         return self._gb_model
 
     @pydantic.computed_field
@@ -64,11 +69,6 @@ class AppResources(pydantic.BaseModel):
     @property
     def core_version(self) -> str:
         return version
-
-    @pydantic.computed_field
-    @property
-    def is_ready(self) -> bool:
-        return self._gb_model is not None
 
     def refresh_model(self) -> None:
         kwargs = {}

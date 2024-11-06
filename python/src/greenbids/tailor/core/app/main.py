@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from greenbids.tailor.core import telemetry
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
-from . import profiler, resources, tasks
+from . import profiler, resources, tasks, exceptions
 from .routers import healthz, ping, root
 
 _logger = logging.getLogger(__name__)
@@ -40,6 +40,7 @@ app = FastAPI(
     description=str(pkg_dist.metadata.json.get("description")),
     version=pkg_dist.version,
     lifespan=_lifespan,
+    exception_handlers=exceptions.EXCEPTION_HANDLERS,
 )
 FastAPIInstrumentor.instrument_app(
     app,

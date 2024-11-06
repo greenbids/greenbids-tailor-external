@@ -20,6 +20,5 @@ async def liveness_probe() -> resources.AppResources:
 async def readiness_probe() -> resources.AppResources:
     """Determine when a container is ready to start accepting traffic."""
     instance = resources.get_instance()
-    if not instance.is_ready:
-        raise HTTPException(status_code=status.HTTP_425_TOO_EARLY)
+    _ = instance.gb_model
     return instance
