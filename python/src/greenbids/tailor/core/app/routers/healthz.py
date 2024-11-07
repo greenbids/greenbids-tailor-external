@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 from greenbids.tailor.core.app import resources
 
 router = APIRouter(prefix="/healthz", tags=["Health check"])
