@@ -70,6 +70,11 @@ class AppResources(pydantic.BaseModel):
     def core_version(self) -> str:
         return version
 
+    @pydantic.computed_field
+    @property
+    def is_ready(self) -> bool:
+        return self._gb_model is not None
+
     def refresh_model(self) -> None:
         kwargs = {}
         try:
