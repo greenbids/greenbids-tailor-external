@@ -1,5 +1,6 @@
 import datetime
 import logging
+import uuid
 import os
 
 from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
@@ -26,9 +27,10 @@ from greenbids.tailor.core import version
 
 RESOURCE = resources.Resource.create(
     {
-        resources.SERVICE_INSTANCE_ID: str(
+        resources.SERVICE_NAMESPACE: str(
             os.environ.get("GREENBIDS_TAILOR_API_USER", "Unknown")
         ),
+        resources.SERVICE_INSTANCE_ID: uuid.uuid1().hex,
         resources.SERVICE_VERSION: version,
     }
 )
