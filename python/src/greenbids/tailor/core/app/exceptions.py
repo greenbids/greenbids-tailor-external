@@ -1,4 +1,4 @@
-from fastapi import Request, HTTPException, status
+from fastapi import Request, HTTPException, status, responses
 from greenbids.tailor.core import fabric, models
 from greenbids.tailor.core.app import resources
 import typing
@@ -31,9 +31,9 @@ async def unexpected_report_handler(request: Request, exc: models.UnexpectedRepo
         + str(ta.dump_python(exc.fabrics, exclude_defaults=True)),
         exc_info=exc,
     )
-    raise HTTPException(
+    return responses.JSONResponse(
+        exc.fabrics,
         status_code=status.HTTP_202_ACCEPTED,
-        detail="Request has been discarded as it was not expected to be used for report.",
     )
 
 
