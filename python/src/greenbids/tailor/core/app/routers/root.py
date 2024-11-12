@@ -1,9 +1,10 @@
 from collections import Counter
 
-from fastapi import APIRouter
-from greenbids.tailor.core import fabric, telemetry, _version
-from .. import resources
+from fastapi import APIRouter, BackgroundTasks
 
+from greenbids.tailor.core import _version, fabric, telemetry
+
+from .. import resources
 
 _meter = telemetry.meter_provider.get_meter(
     "greenbids.tailor", version=_version.version
@@ -47,13 +48,17 @@ async def get_buyers_probabilities(
 
 @router.post("/")
 async def report_buyers_status(
-    fabrics: list[fabric.Fabric],
+    fabrics: list[fabric.Fabric], background_tasks: BackgroundTasks
 ) -> list[fabric.Fabric]:
     """Train model according to actual outcome.
 
-    This must NOT be called for each adcall, but only for exploration ones.
+    This must NOT be called for each adcall, but only for training ones.
     All fields of the fabrics need to be set.
     Returns the same data than the input.
     """
     _request_size.record(len(fabrics), {"http.request.method": "POST"})
-    return resources.get_instance().gb_model.report_buyers_status(fabrics)
+    background_tasks.add_task(
+        resources.get_instance().gb_model.report_buyers_status,
+        fabrics,
+    )
+    return fabrics
