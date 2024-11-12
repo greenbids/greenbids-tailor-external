@@ -13,6 +13,14 @@ from greenbids.tailor.core import fabric
 _logger = logging.getLogger(__name__)
 
 
+class UnexpectedReport(ValueError):
+    """Raised when the report was called while it is not expected."""
+
+    def __init__(self, *args: object, fabrics: list[fabric.Fabric]) -> None:
+        super().__init__(*args)
+        self.fabrics = fabrics
+
+
 class Model(ABC):
 
     @abstractmethod
@@ -54,6 +62,8 @@ class NullModel(Model):
         self,
         fabrics: list[fabric.Fabric],
     ) -> list[fabric.Fabric]:
+        if not fabric.should_report(fabrics):
+            raise UnexpectedReport(fabrics=fabrics)
         self._logger.debug([f.feature_map.root for f in fabrics[:1]])
         return fabrics
 

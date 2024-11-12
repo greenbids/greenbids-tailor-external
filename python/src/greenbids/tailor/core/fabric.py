@@ -77,3 +77,13 @@ class Fabric(_CamelSerialized):
     feature_map: FeatureMap = pydantic.Field(default_factory=FeatureMap)
     prediction: Prediction = pydantic.Field(default_factory=Prediction)
     ground_truth: GroundTruth = pydantic.Field(default_factory=GroundTruth)
+
+
+def should_report(fabrics: list[Fabric]) -> bool:
+    """Does a request should be sent to report endpoints.
+
+    Returns `True` if **all (and at least one)** fabrics are exploration and training one, else `False`.
+    """
+    return fabrics and all(
+        (f.prediction.is_exploration and f.prediction.is_training) for f in fabrics
+    )
