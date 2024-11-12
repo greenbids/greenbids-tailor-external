@@ -82,8 +82,8 @@ class Fabric(_CamelSerialized):
 def should_report(fabrics: list[Fabric]) -> bool:
     """Does a request should be sent to report endpoints.
 
-    Returns `True` if **all** fabrics are exploration and training one, else `False`.
+    Returns `True` if **all (and at least one)** fabrics are exploration and training one, else `False`.
     """
-    return not all(
-        not (f.prediction.is_exploration and f.prediction.is_training) for f in fabrics
+    return fabrics and all(
+        (f.prediction.is_exploration and f.prediction.is_training) for f in fabrics
     )
