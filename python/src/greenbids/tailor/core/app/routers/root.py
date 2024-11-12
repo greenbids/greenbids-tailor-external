@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 from greenbids.tailor.core import fabric
 from .. import resources
 
@@ -20,12 +20,16 @@ async def get_buyers_probabilities(
 
 @router.post("/")
 async def report_buyers_status(
-    fabrics: list[fabric.Fabric],
+    fabrics: list[fabric.Fabric], background_tasks: BackgroundTasks
 ) -> list[fabric.Fabric]:
     """Train model according to actual outcome.
 
-    This must NOT be called for each adcall, but only for exploration ones.
+    This must NOT be called for each adcall, but only for training ones.
     All fields of the fabrics need to be set.
     Returns the same data than the input.
     """
-    return resources.get_instance().gb_model.report_buyers_status(fabrics)
+    background_tasks.add_task(
+        resources.get_instance().gb_model.report_buyers_status,
+        fabrics,
+    )
+    return fabrics
