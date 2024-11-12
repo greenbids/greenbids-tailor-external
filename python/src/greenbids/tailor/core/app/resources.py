@@ -7,19 +7,15 @@ import io
 
 import pydantic
 from greenbids.tailor.core import models, version
+from greenbids.tailor.core.app import settings
 
 _logger = logging.getLogger(__name__)
 
 
 def _default_refresh_period() -> datetime.timedelta:
     return (
-        datetime.timedelta(seconds=float(seconds))
-        if (
-            seconds := os.environ.get(
-                "GREENBIDS_TAILOR_MODEL_REFRESH_SECONDS",
-            )
-        )
-        is not None
+        datetime.timedelta(seconds=seconds)
+        if (seconds := settings.get_settings().gb_model_refresh_seconds > 0)
         else datetime.timedelta.max
     )
 
@@ -34,7 +30,7 @@ class AppResources(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
     gb_model_name: str = pydantic.Field(
-        default_factory=lambda: str(os.environ.get("GREENBIDS_TAILOR_MODEL_NAME"))
+        default_factory=lambda: settings.get_settings().gb_model_name
     )
     gb_model_refresh_period: datetime.timedelta = pydantic.Field(
         default_factory=_default_refresh_period
@@ -43,7 +39,7 @@ class AppResources(pydantic.BaseModel):
         default_factory=lambda: datetime.datetime.now(datetime.timezone.utc)
     )
     profiling_output: str = pydantic.Field(
-        default_factory=lambda: os.environ.get("GREENBIDS_TAILOR_PROFILE", "")
+        default_factory=lambda: settings.get_settings().profile
     )
     _start_monotonic: float = pydantic.PrivateAttr(default_factory=time.monotonic)
     _gb_model: models.Model | None = None
