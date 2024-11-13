@@ -21,6 +21,10 @@ on:
           type: string
           description: Version number of the image and chart
           required: true
+      release:
+        type: boolean
+        description: Should the generated image be published
+        default: false
 
 
 env:
@@ -80,7 +84,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: container/
-          push: ${{ github.event_name == 'push' }}
+          push: ${{ github.event_name == 'push' || fromJSON(inputs.release) }}
           platforms: linux/amd64,linux/arm64
           build-args: |-
             PYTHON_VERSION=3.12
