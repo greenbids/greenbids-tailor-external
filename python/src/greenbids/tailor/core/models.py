@@ -1,11 +1,12 @@
-from importlib import metadata
 import importlib
 import logging
 import os
 import pickle
 import subprocess
 import typing
+import uuid
 from abc import ABC, abstractmethod
+from importlib import metadata
 from urllib.parse import urlsplit
 
 from greenbids.tailor.core import fabric
@@ -55,7 +56,9 @@ class NullModel(Model):
         self,
         fabrics: list[fabric.Fabric],
     ) -> list[fabric.Fabric]:
-        prediction = fabric.Prediction(exploration_rate=0.2)
+        prediction = fabric.Prediction(
+            exploration_rate=0.2, training_rate=0.2, tailor_id=uuid.uuid4()
+        )
         return [f.model_copy(update=dict(prediction=prediction)) for f in fabrics]
 
     def report_buyers_status(

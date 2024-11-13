@@ -25,7 +25,7 @@ class Prediction(_CamelSerialized):
     """Confidence score returned by the model"""
     threshold: float = -1
     """Confidence threshold used to binarize the outcome"""
-    tailor_id: uuid.UUID = pydantic.Field(default_factory=uuid.uuid4)
+    tailor_id: uuid.UUID = pydantic.Field(default_factory=lambda: uuid.UUID(int=0))
     """ID identifying this call"""
     exploration_rate: float = 1
     """Which proportion of requests will be exploration ones"""
