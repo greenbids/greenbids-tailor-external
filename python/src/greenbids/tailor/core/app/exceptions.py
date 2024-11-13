@@ -32,7 +32,7 @@ async def unexpected_report_handler(request: Request, exc: models.UnexpectedRepo
         exc_info=exc,
     )
     return responses.JSONResponse(
-        exc.fabrics,
+        ta.dump_python(exc.fabrics, mode="json"),
         status_code=status.HTTP_202_ACCEPTED,
     )
 
