@@ -17,6 +17,8 @@ EXPOSE 8000
 # Prometheus telemetry port
 EXPOSE 9464
 
+HEALTHCHECK --interval=30s --timeout=1s --start-period=5s --retries=3 CMD [ curl -f http://localhost:8000/healtz/readiness ]
+
 ENV WEB_CONCURRENCY=4
 ENV OTEL_SERVICE_NAME="greenbids-tailor"
 ENV OTEL_TRACES_SAMPLER=parentbased_traceidratio
