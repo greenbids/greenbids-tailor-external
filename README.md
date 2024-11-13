@@ -60,15 +60,13 @@ Some environment variables may be used to change the default configuration of th
 | Variable                         | Description                                                                           | Default                                |
 |----------------------------------|---------------------------------------------------------------------------------------|----------------------------------------|
 | GREENBIDS_TAILOR_API_USER        | **Required** User name used to authenticate to backend                                |                                        |
-|----------------------------------|---------------------------------------------------------------------------------------|----------------------------------------|
+| GREENBIDS_TAILOR_API_KEY         | Key used to authenticate to backend. Required to download dedicated model.            |                                        |
+| GREENBIDS_TAILOR_LOG_LEVEL       | Log level of the Greenbids Tailor service                                             | INFO                                   |
+| WEB_CONCURRENCY                  | How many worker processes to launch                                                   | 1, 4 in Docker, 1 in the Helm chart    |
 | OTEL_EXPORTER_PROMETHEUS_ENABLED | Enable the Prometheus exporter to expose service metrics (set to any value to enable) |                                        |
 | OTEL_EXPORTER_PROMETHEUS_PORT    | Port on which to expose Prometheus metrics                                            | 9464                                   |
 | OTEL_TRACES_SAMPLER              | Telemetry traces sampling strategy                                                    | parentbased_traceidratio in containers |
 | OTEL_TRACES_SAMPLER_ARG          | Telemetry traces sampling                                                             | 1, 0.0001 in containers                |
-| WEB_CONCURRENCY                  | How many worker processes to launch                                                   | 1, 4 in Docker, 1 in the Helm chart    |
-| GREENBIDS_TAILOR_LOG_LEVEL       | Log level of the Greenbids Tailor service                                             | INFO                                   |
-| GREENBIDS_TAILOR_PROFILE         | Filename to dump CProfile trace. Unset value disable any profiling.                   |                                        |
-| GREENBIDS_TAILOR_API_KEY         | Key used to authenticate to backend. Required to download dedicated model.            |                                        |
 
 ## 🍱 Integration
 
@@ -111,7 +109,7 @@ sequenceDiagram
             end
         end
 
-        opt if fabric.prediction. isExploration
+        opt if fabric.prediction. isTraining
             rect rgba(30, 183, 136, 0.66)
                 SSP -)+ GB: POST /
                 GB -->>- SSP: 204 No Response
@@ -142,27 +140,27 @@ locust --headless -f locustfiles --processes -1 --users 17 --spawn-rate 4 -H htt
 
 Abort it when you want, pressing `Ctrl+C`.
 It will print you a summary of the test.
-The following has been obtained on a laptop (AMD Ryzen 7 PRO, 16GB RAM) running the Python executable:
+The following has been obtained on a Google Cloud Compute Engine instance of type `e2-highcpu-8` runnning the docker image with `WEB_CONCURRENCY` set to 7:
 
 ```text
-Type     Name                  # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s
---------|--------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
-POST                            16991     0(0.00%) |      4       0     125      5 |  386.06        0.00
-PUT                             84973     0(0.00%) |      4       0     125      4 | 1930.70        0.00
-GET      /healthz/liveness          1     0(0.00%) |     13      13      13     13 |    0.02        0.00
-GET      /healthz/readiness         2     0(0.00%) |      9       7      10      7 |    0.05        0.00
-GET      /healthz/startup           1     0(0.00%) |      9       9       9      9 |    0.02        0.00
---------|--------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
-         Aggregated            101968     0(0.00%) |      4       0     125      4 | 2316.85        0.00
+Type     Name                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s
+--------|----------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+POST                                     5010     0(0.00%) |      3       1      92      3 |   12.30        0.00
+PUT                                    507116     0(0.00%) |      3       1     128      3 | 1245.16        0.00
+GET      /healthz/liveness                 12     0(0.00%) |      5       3       8      4 |    0.03        0.00
+GET      /healthz/readiness                13     0(0.00%) |      4       3       5      4 |    0.03        0.00
+GET      /healthz/startup                   8     0(0.00%) |      4       3       5      4 |    0.02        0.00
+--------|----------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------
+         Aggregated                    512159     0(0.00%) |      3       1     128      3 | 1257.55        0.00
 
 Response time percentiles (approximated)
-Type     Name                      50%    66%    75%    80%    90%    95%    98%    99%  99.9% 99.99%   100% # reqs
---------|--------------------|--------|------|------|------|------|------|------|------|------|------|------|------
-POST                                 5      5      6      6      6      7      7      8      9    120    130  16991
-PUT                                  4      5      5      5      6      6      7      7      9     99    130  84973
-GET      /healthz/liveness          13     13     13     13     13     13     13     13     13     13     13      1
-GET      /healthz/readiness         11     11     11     11     11     11     11     11     11     11     11      2
-GET      /healthz/startup            9      9      9      9      9      9      9      9      9      9      9      1
---------|--------------------|--------|------|------|------|------|------|------|------|------|------|------|------
-         Aggregated                  4      5      5      5      6      6      7      7      9     99    130 101968
+Type     Name                                  50%    66%    75%    80%    90%    95%    98%    99%  99.9% 99.99%   100% # reqs
+--------|--------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
+POST                                             3      3      4      4      5      5      6     12     26     92     92   5010
+PUT                                              3      3      4      4      5      5      6      7     13     57    130 507116
+GET      /healthz/liveness                       4      4      7      7      8      9      9      9      9      9      9     12
+GET      /healthz/readiness                      4      4      4      4      5      5      5      5      5      5      5     13
+GET      /healthz/startup                        4      4      5      5      5      5      5      5      5      5      5      8
+--------|--------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
+         Aggregated                              3      3      4      4      5      5      6      7     14     57    130 512159
 ```
