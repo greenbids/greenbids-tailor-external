@@ -9,6 +9,8 @@ from abc import ABC, abstractmethod
 from importlib import metadata
 from urllib.parse import urlsplit
 
+from filelock import FileLock
+
 from greenbids.tailor.core import fabric
 
 _logger = logging.getLogger(__name__)
@@ -85,12 +87,12 @@ def load(gb_model_name: str, **kwargs):
         importlib.invalidate_caches()
 
     return (
-        metadata.entry_points(group=ENTRY_POINTS_GROUP)[gb_model_name]
+        metadata.entry_points(group=ENTRY_POINTS_GROUP)[gb_model_name.split("=")[0]]
         .load()
         .get_instance(**kwargs)
     )
 
-
+_download_lock = FileLock("/tmp/greenbids-tailor-download.lock")
 def _download(target: str):
     """Download a model from private Python registry
 
@@ -106,6 +108,7 @@ def _download(target: str):
             netloc,
         )
     )
+    _logger.info("Downloading model %s...", target)
     args = [
         "pip",
         "install",
@@ -116,7 +119,10 @@ def _download(target: str):
         "https://pypi.org/simple",
         f"greenbids-tailor-models-{target}",
     ]
-    _logger.debug(subprocess.check_output(args).decode())
+    with _download_lock:
+        _logger.debug("Download lock acquired")
+        output = subprocess.check_output(args).decode()
+    _logger.debug(output)
 
 
 def get_instance(**_):
