@@ -85,6 +85,7 @@ class AppResources(pydantic.BaseModel):
         except ModelNotReady:
             pass
         self._gb_model = models.load(self.gb_model_name, **kwargs)
+        _logger.info("Model %s loaded", self.gb_model_name)
 
 
 @functools.lru_cache(maxsize=1)
