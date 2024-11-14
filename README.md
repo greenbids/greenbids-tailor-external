@@ -164,3 +164,5 @@ GET      /healthz/startup                        4      4      5      5      5  
 --------|--------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------
          Aggregated                              3      3      4      4      5      5      6      7     14     57    130 512159
 ```
+
+In addition to these metrics, the server load average barely reach 2.0 while the CPU usage is maintained below 30% with a memory footprint around 2GiB (with a peak on startup at 2.5GiB).
