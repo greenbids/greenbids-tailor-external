@@ -1,4 +1,11 @@
-from fastapi import Request, HTTPException, status, responses
+from fastapi import (
+    Request,
+    HTTPException,
+    status,
+    responses,
+    exceptions,
+    exception_handlers,
+)
 from greenbids.tailor.core import fabric, models
 from greenbids.tailor.core.app import resources
 import typing
@@ -37,10 +44,20 @@ async def unexpected_report_handler(request: Request, exc: models.UnexpectedRepo
     )
 
 
+async def request_validation_exception_handler(
+    request: Request, exc: exceptions.RequestValidationError
+):
+    _logger.warning(
+        "Unable to process the following request: \n%s\n%s", await request.body(), exc
+    )
+    return await exception_handlers.request_validation_exception_handler(request, exc)
+
+
 EXCEPTION_HANDLERS: dict[
     typing.Union[int, type[Exception]],
     typing.Callable[[Request, typing.Any], typing.Coroutine],
 ] = {
     resources.ModelNotReady: model_not_ready_handler,
     models.UnexpectedReport: unexpected_report_handler,
+    exceptions.RequestValidationError: request_validation_exception_handler,
 }

@@ -1,9 +1,10 @@
 import contextlib
+import datetime
 import logging
 from importlib.metadata import distribution
 
 from fastapi import FastAPI
-from greenbids.tailor.core import telemetry
+from greenbids.tailor.core import telemetry, logging_ as gb_logging
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from . import profiler, resources, tasks, exceptions
@@ -31,7 +32,13 @@ def _setup_logging():
 
     logging.root.addHandler(stderr_handler)
     logging.root.addHandler(telemetry.handler)
-    logging.getLogger("uvicorn.access").disabled = True
+    uvicorn_logger = logging.getLogger("uvicorn.access")
+    uvicorn_logger.addFilter(gb_logging.HttpAccessFilter())
+    uvicorn_logger.addFilter(
+        gb_logging.RateLimitingFilter(
+            30, datetime.timedelta(minutes=1), logger=f"{__name__}.uvicorn.access"
+        )
+    )
 
 pkg_dist = distribution("greenbids-tailor")
 app = FastAPI(

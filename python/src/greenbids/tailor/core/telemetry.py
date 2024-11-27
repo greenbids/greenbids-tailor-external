@@ -22,7 +22,7 @@ from opentelemetry.exporter.prometheus import PrometheusMetricReader
 import prometheus_client
 
 
-from .logging import RateLimitingFilter
+from .logging_ import RateLimitingFilter
 from greenbids.tailor.core import version
 
 RESOURCE = resources.Resource.create(
