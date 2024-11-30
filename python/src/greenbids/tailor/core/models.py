@@ -12,6 +12,8 @@ from urllib.parse import urlsplit
 from filelock import FileLock
 
 from greenbids.tailor.core import fabric
+from greenbids.tailor.core.app import settings
+
 
 _logger = logging.getLogger(__name__)
 
@@ -77,10 +79,7 @@ ENTRY_POINTS_GROUP = "greenbids-tailor-models"
 
 
 def load(gb_model_name: str, **kwargs):
-    if (
-        gb_model_name == str(None)
-        or os.environ.get("GREENBIDS_TAILOR_DOWNLOAD_DISABLED", "").lower() == "true"
-    ):
+    if gb_model_name == str(None) or settings.get_settings().download_disabled:
         _logger.debug("No model to download")
     else:
         _download(gb_model_name)
@@ -99,12 +98,12 @@ def _download(target: str):
     Args:
         target (str): Simple name of the model
     """
-    index_url = urlsplit(os.environ.get("GREENBIDS_TAILOR_INDEX_URL", ""))
+    index_url = urlsplit(settings.get_settings().index_url)
     netloc = index_url.netloc.split("@")[-1]
     index_url = index_url._replace(
         netloc="{}:{}@{}".format(
-            os.environ.get("GREENBIDS_TAILOR_API_USER", "nobody"),
-            os.environ.get("GREENBIDS_TAILOR_API_KEY", ""),
+            settings.get_settings().api_user,
+            settings.get_settings().api_key,
             netloc,
         )
     )

@@ -24,12 +24,11 @@ import prometheus_client
 
 from .logging_ import RateLimitingFilter
 from greenbids.tailor.core import version
+from greenbids.tailor.core.app import settings
 
 RESOURCE = resources.Resource.create(
     {
-        resources.SERVICE_NAMESPACE: str(
-            os.environ.get("GREENBIDS_TAILOR_API_USER", "Unknown")
-        ),
+        resources.SERVICE_NAMESPACE: str(settings.get_settings().api_user),
         resources.SERVICE_INSTANCE_ID: uuid.uuid1().hex,
         resources.SERVICE_VERSION: version,
     }
@@ -54,15 +53,14 @@ logger_provider.add_log_record_processor(_OTLP_LOGS_PROCESSOR)
 
 handler = logs.LoggingHandler(
     level=logging.getLevelNamesMapping()[
-        # Only report error messages by default
-        os.environ.get("GREENBIDS_TAILOR_SUPPORT_LOG_LEVEL", "ERROR")
+        settings.get_settings().support.log_level.upper()
     ],
     logger_provider=logger_provider,
 )
 # Add a rate limiter to avoid support stack overwhelm
 handler.addFilter(
     RateLimitingFilter(
-        count=int(os.environ.get("GREENBIDS_TAILOR_SUPPORT_COUNT", 30)),
+        count=settings.get_settings().support.count,
         per=datetime.timedelta(minutes=1),
     )
 )
