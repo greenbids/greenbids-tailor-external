@@ -13,6 +13,10 @@ on:
         type: string
         description: Version number of the application
         required: true
+      release:
+        type: boolean
+        description: Should the generated package be published
+        default: false
 
 jobs:
   build:
@@ -39,7 +43,7 @@ jobs:
   publish:
     name: Upload release to PyPI
     needs: build
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || fromJSON(inputs.release)
     runs-on: ubuntu-latest
     env:
       pypi_url: ${{ github.ref_type == 'tag' && 'https://pypi.org' || 'https://test.pypi.org' }}
