@@ -1,6 +1,19 @@
+from collections import Counter
+
 from fastapi import APIRouter
-from greenbids.tailor.core import fabric
+from greenbids.tailor.core import fabric, telemetry, _version
 from .. import resources
+
+
+_meter = telemetry.meter_provider.get_meter(
+    "greenbids.tailor", version=_version.version
+)
+_request_size = _meter.create_histogram(
+    "greenbids.tailor.request.size", "1", "Measure the number of items in the request"
+)
+_response_size = _meter.create_histogram(
+    "greenbids.tailor.response.size", "1", "Measure the number of items in the response"
+)
 
 router = APIRouter(tags=["Main"])
 
@@ -15,7 +28,19 @@ async def get_buyers_probabilities(
     Only the feature map attribute of the fabrics needs to be present.
     The prediction attribute will be populated in the returned response.
     """
-    return resources.get_instance().gb_model.get_buyers_probabilities(fabrics)
+    _request_size.record(len(fabrics), {"http.request.method": "PUT"})
+    res = resources.get_instance().gb_model.get_buyers_probabilities(fabrics)
+    for should_send, count in (
+        {True: 0, False: 0} | Counter(f.prediction.should_send for f in res)
+    ).items():
+        _response_size.record(
+            count,
+            {
+                "http.request.method": "PUT",
+                "greenbids.tailor.should_send": str(should_send),
+            },
+        )
+    return res
 
 
 @router.post("/")
@@ -28,4 +53,5 @@ async def report_buyers_status(
     All fields of the fabrics need to be set.
     Returns the same data than the input.
     """
+    _request_size.record(len(fabrics), {"http.request.method": "POST"})
     return resources.get_instance().gb_model.report_buyers_status(fabrics)
