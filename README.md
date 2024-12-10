@@ -78,49 +78,48 @@ Following the interaction diagram provided by the [OpenRTB API Specification (ve
 sequenceDiagram
     participant Publisher
     box rgba(128, 128, 128, 0.33) Partner Network
-        participant SSP as RTB Exchange
+        participant SSP
         participant GB as Greenbids Tailor
     end
-    participant Bidder
-    participant greenbids.ai
-
-    activate GB
-    GB ->> greenbids.ai: Fetch model
-    greenbids.ai -->> GB: 
-    deactivate GB
-
-    loop For every ad request
-        activate Publisher
-        Publisher ->>+ SSP: 0. Ad Request
-
-        rect rgba(30, 183, 136, 0.66)
-        SSP ->>+ GB: PUT /
-        GB -->>- SSP: 200 OK
-        end
-
-        loop for each fabric
-            opt if fabric.prediction.shouldSend
-                SSP ->>+ Bidder : 1. Bid Request
-                alt 200
-                Bidder -->> SSP: Bid Response
-                else 204
-                Bidder -->>- SSP: No Response
-                end
-            end
-        end
-
-        opt if fabric.prediction. isTraining
-            rect rgba(30, 183, 136, 0.66)
-                SSP -)+ GB: POST /
-                GB -->>- SSP: 204 No Response
-            end
-        end
-
-        note over Publisher,SSP: Continue auction process
-        deactivate SSP
-        deactivate Publisher
+    box rgba(255, 255, 255, 0.3) Internet Egress
+        participant Bidder1
+        participant Bidder2
+        participant greenbids.ai
     end
+
+    critical Start up
+        activate GB
+        GB ->> greenbids.ai: Fetch model
+        greenbids.ai -->> GB:
+        deactivate GB
+    end
+
+    activate Publisher
+    Publisher ->>+ SSP: 0. Ad Request
+
+    rect rgba(30, 183, 136, 0.66)
+    SSP ->>+ GB: PUT /<br/>[Bidder1: ❔, Bidder2: ❔, ...]
+    GB -->>- SSP: 200 OK<br/>[Bidder1: ✅, Bidder2: ❌, ...]
+    end
+
+
+    SSP ->>+ Bidder1 : 1. Bid Request
+    note right of SSP: The filtered bid request<br/>to Bidder2 is not sent
+    Bidder1 -->>- SSP: 204 NO RESPONSE
+
+    opt if prediction.isTraining
+        rect rgba(30, 183, 136, 0.66)
+            SSP -)+ GB: POST /<br/>[Bidder1: ❌, ...]
+            GB -->>- SSP: 204 No Response
+        end
+    end
+
+    note over Publisher,SSP: Continue auction process
+    deactivate SSP
+    deactivate Publisher
+    par Background report
         GB --) greenbids.ai: telemetry
+    end
 ```
 
 ### 🏋️ Example
