@@ -1,3 +1,4 @@
+from collections import abc
 import uuid
 
 import pydantic
@@ -9,6 +10,7 @@ class _CamelSerialized(pydantic.BaseModel):
         alias_generator=pydantic.alias_generators.to_camel,
         populate_by_name=True,
         use_attribute_docstrings=True,
+        frozen=True,
     )
 
 
@@ -17,6 +19,9 @@ class FeatureMap(_CamelSerialized, pydantic.RootModel):
     root: dict[str, bool | int | float | bytes | str] = pydantic.Field(
         default_factory=dict
     )
+
+    def __hash__(self):
+        return hash(tuple(self.root.items()))
 
 
 class Prediction(_CamelSerialized):
@@ -79,11 +84,11 @@ class Fabric(_CamelSerialized):
     ground_truth: GroundTruth = pydantic.Field(default_factory=GroundTruth)
 
 
-def should_report(fabrics: list[Fabric]) -> bool:
+def should_report(fabrics: abc.Iterable[Fabric]) -> bool:
     """Does a request should be sent to report endpoints.
 
     Returns `True` if **all (and at least one)** fabrics are exploration and training one, else `False`.
     """
-    return fabrics and all(
+    return bool(fabrics) and all(
         (f.prediction.is_exploration and f.prediction.is_training) for f in fabrics
     )

@@ -1,7 +1,8 @@
 from collections import Counter
 
+import cachetools
 from fastapi import APIRouter
-from greenbids.tailor.core import fabric, telemetry, _version
+from greenbids.tailor.core import fabric, telemetry, _version, settings
 from .. import resources
 
 
@@ -14,14 +15,21 @@ _request_size = _meter.create_histogram(
 _response_size = _meter.create_histogram(
     "greenbids.tailor.response.size", "1", "Measure the number of items in the response"
 )
+_cache_info = _meter.create_counter("greenbids.tailor.cache", "1")
 
 router = APIRouter(tags=["Main"])
 
 
+_PREDICTION_CACHE = cachetools.TTLCache(
+    maxsize=settings.SETTINGS.prediction_cache_size,
+    ttl=settings.SETTINGS.prediction_cache_ttl_seconds,
+)
+
+
 @router.put("/")
 async def get_buyers_probabilities(
-    fabrics: list[fabric.Fabric],
-) -> list[fabric.Fabric]:
+    fabrics: tuple[fabric.Fabric, ...],
+) -> tuple[fabric.Fabric, ...]:
     """Compute the probability of the buyers to provide a bid.
 
     This must be called for each adcall.
@@ -29,7 +37,14 @@ async def get_buyers_probabilities(
     The prediction attribute will be populated in the returned response.
     """
     _request_size.record(len(fabrics), {"http.request.method": "PUT"})
-    res = resources.get_instance().gb_model.get_buyers_probabilities(fabrics)
+    if fabrics not in _PREDICTION_CACHE:
+        _cache_info.add(1, attributes={"result": "miss"})
+        _PREDICTION_CACHE[fabrics] = (
+            resources.get_instance().gb_model.get_buyers_probabilities(fabrics)
+        )
+    else:
+        _cache_info.add(1, attributes={"result": "hit"})
+    res = _PREDICTION_CACHE[fabrics]
     for should_send, count in (
         {True: 0, False: 0} | Counter(f.prediction.should_send for f in res)
     ).items():
@@ -45,8 +60,8 @@ async def get_buyers_probabilities(
 
 @router.post("/")
 async def report_buyers_status(
-    fabrics: list[fabric.Fabric],
-) -> list[fabric.Fabric]:
+    fabrics: tuple[fabric.Fabric, ...],
+) -> tuple[fabric.Fabric, ...]:
     """Train model according to actual outcome.
 
     This must NOT be called for each adcall, but only for exploration ones.
