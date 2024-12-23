@@ -110,6 +110,8 @@ sequenceDiagram
     opt if prediction.isTraining
         rect rgba(30, 183, 136, 0.66)
             SSP -)+ GB: POST /<br/>[Bidder1: ❌, ...]
+            GB ->>+ GB: update model
+            deactivate GB
             GB -->>- SSP: 204 No Response
         end
     end
