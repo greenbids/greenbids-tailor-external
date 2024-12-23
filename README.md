@@ -90,7 +90,7 @@ sequenceDiagram
     critical Start up
         activate GB
         GB ->> greenbids.ai: Fetch model
-        greenbids.ai -->> GB:
+        greenbids.ai -->> GB: compiled model
         deactivate GB
     end
 
