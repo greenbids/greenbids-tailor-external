@@ -42,14 +42,17 @@ class Rtb(locust.FastHttpUser):
             # For selected bidders, send them a bid request
             # rsp = requests.post(bidder.url, json={...})
 
-            # Bidder may or may not return a bid (for test we simulate this randomly)
+            # Bidder may or may not return a bid
             # hasResponse = (rsp.status_code != 204)
-            hasResponse = random.choice([True, False])
+            # for test we simulate this deterministically (10% participation rate)
+            hasResponse = (hash(tuple(fabric["featureMap"].items())) % 100) < 10
+            if random.random() < 0.01:  # Add some noise
+                hasResponse = not hasResponse
 
             # Store the outcome in the fabric
             fabric["groundTruth"] = dict(hasResponse=hasResponse)
 
         # For a sample of calls, report the outcomes to the Greenbids Tailor POST endpoint
-        if fabrics[0]["prediction"]["isExploration"]:
+        if fabrics[0]["prediction"]["isTraining"]:
             # You may use a fire-and-forget mechanism
             self.client.post("", json=fabrics)
