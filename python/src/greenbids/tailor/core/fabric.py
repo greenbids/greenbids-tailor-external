@@ -1,3 +1,4 @@
+import typing
 import uuid
 
 import pydantic
@@ -18,11 +19,12 @@ class FeatureMap(_CamelSerialized, pydantic.RootModel):
         default_factory=dict
     )
 
-
 class Prediction(_CamelSerialized):
     """Result of the shaping process."""
     score: float = -1
     """Confidence score returned by the model"""
+    score_type: str = "UNDEFINED"
+    """How the score was computed"""
     threshold: float = -1
     """Confidence threshold used to binarize the outcome"""
     tailor_id: uuid.UUID = pydantic.Field(default_factory=lambda: uuid.UUID(int=0))
