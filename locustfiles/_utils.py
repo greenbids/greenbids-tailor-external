@@ -24,6 +24,12 @@ class AdRequest(typing.TypedDict):
     device: str
     """Device used by the user visiting the publisher's site"""
 
+    country: str
+    """Country of the user visiting the publisher's site"""
+
+    user_agent: str
+    """User agent of the user visiting the publisher's site"""
+
 
 class BidderFactory(polyfactory.factories.TypedDictFactory[Bidder]):
     __set_as_default_factory_for_type__ = True
@@ -47,10 +53,13 @@ class AdRequestFactory(polyfactory.factories.TypedDictFactory[AdRequest]):
     """Maximal number of bidders"""
 
     _hostnames = [
-        polyfactory.factories.TypedDictFactory.__faker__.unique.uri()
+        polyfactory.factories.TypedDictFactory.__faker__.unique.hostname()
         for _ in range(100)
     ]
     _devices = ["smartphone", "desktop", "tablet", "ctv"]
+    _countries = ["AU", "CA", "CN", "DE", "ES", "FR", "IT", "JP", "UK", "US"]
+
+    user_agent = polyfactory.factories.TypedDictFactory.__faker__.user_agent
 
     @classmethod
     def hostname(cls) -> str:
@@ -59,3 +68,7 @@ class AdRequestFactory(polyfactory.factories.TypedDictFactory[AdRequest]):
     @classmethod
     def device(cls) -> str:
         return str(cls.__random__.choice(cls._devices))
+
+    @classmethod
+    def country(cls) -> str:
+        return str(cls.__random__.choice(cls._countries))

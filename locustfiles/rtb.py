@@ -1,3 +1,5 @@
+import json
+import hashlib
 import random
 
 import locust
@@ -20,9 +22,11 @@ class Rtb(locust.FastHttpUser):
             {
                 "featureMap": {
                     "bidder": bidder["name"],
-                    "userSynced": bidder.get("user_id") is not None,
-                    "hostname": ad_request["hostname"],
-                    "device": ad_request["device"],
+                    "hasUserId": bidder.get("user_id") is not None,
+                    "publisherId": ad_request["hostname"],
+                    "deviceType": ad_request["device"],
+                    "country": ad_request["country"],
+                    "ua": ad_request["user_agent"],
                     # You may add whatever seems relevant to you here.
                     "SSP's_secret_ingredient": 42,
                     # Let's get in touch to allow us to craft a well suited model.
@@ -45,8 +49,13 @@ class Rtb(locust.FastHttpUser):
             # Bidder may or may not return a bid
             # hasResponse = (rsp.status_code != 204)
             # for test we simulate this deterministically (10% participation rate)
-            hasResponse = (hash(tuple(fabric["featureMap"].items())) % 100) < 10
-            if random.random() < 0.01:  # Add some noise
+            hasResponse = (
+                hashlib.md5(
+                    json.dumps(fabric["featureMap"], sort_keys=True).encode()
+                ).digest()[0]
+                < 26
+            )
+            if random.random() < 0.001:  # Add some noise
                 hasResponse = not hasResponse
 
             # Store the outcome in the fabric
