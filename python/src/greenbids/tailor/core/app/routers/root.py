@@ -30,6 +30,7 @@ async def get_buyers_probabilities(
     """
     _request_size.record(len(fabrics), {"http.request.method": "PUT"})
     res = resources.get_instance().gb_model.get_buyers_probabilities(fabrics)
+    is_exploration_label = next(iter(res), fabric.Fabric()).prediction.is_exploration
     for should_send, count in (
         {True: 0, False: 0} | Counter(f.prediction.should_send for f in res)
     ).items():
@@ -38,6 +39,7 @@ async def get_buyers_probabilities(
             {
                 "http.request.method": "PUT",
                 "greenbids.tailor.should_send": str(should_send),
+                "greenbids.tailor.is_exploration": str(is_exploration_label),
             },
         )
     return res
