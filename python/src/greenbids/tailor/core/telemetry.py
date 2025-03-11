@@ -25,6 +25,8 @@ import prometheus_client
 from .logging_ import RateLimitingFilter
 from greenbids.tailor.core import version
 
+_logger = logging.getLogger(__name__)
+
 RESOURCE = resources.Resource.create(
     {
         resources.SERVICE_NAMESPACE: str(
@@ -38,10 +40,20 @@ RESOURCE = resources.Resource.create(
 _OTLP_METRICS_READER = PeriodicExportingMetricReader(OTLPMetricExporter())
 metric_readers: list[MetricReader] = [_OTLP_METRICS_READER]
 if os.environ.get("OTEL_EXPORTER_PROMETHEUS_ENABLED"):
-    prometheus_client.start_http_server(
-        port=int(os.environ.get("OTEL_EXPORTER_PROMETHEUS_PORT", 9464))
-    )
-    metric_readers.append(PrometheusMetricReader())
+    default_port = int(os.environ.get("OTEL_EXPORTER_PROMETHEUS_PORT", 9464))
+    exc = None
+    for port in range(default_port, default_port + 128):
+        try:
+            prometheus_client.start_http_server(port=port)
+        except Exception as e:
+            exc = e
+        else:
+            break
+    if exc is not None:
+        _logger.error("Unable to start the Prometheus server.", exc_info=exc)
+    else:
+        _logger.info("Prometheus server started on port %s", port)
+        metric_readers.append(PrometheusMetricReader())
 meter_provider = metrics.MeterProvider(metric_readers=metric_readers, resource=RESOURCE)
 
 _OTLP_TRACES_PROCESSOR = BatchSpanProcessor(OTLPSpanExporter())
