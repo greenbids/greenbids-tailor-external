@@ -1,3 +1,4 @@
+from collections import abc
 import importlib
 import logging
 import os
@@ -19,9 +20,11 @@ _logger = logging.getLogger(__name__)
 class UnexpectedReport(ValueError):
     """Raised when the report was called while it is not expected."""
 
-    def __init__(self, *args: object, fabrics: list[fabric.Fabric]) -> None:
+    def __init__(
+        self, *args: object, fabrics: abc.Sequence[fabric.PredictedFabric]
+    ) -> None:
         super().__init__(*args)
-        self.fabrics = fabrics
+        self.fabrics = list(fabrics)
 
 
 class Model(ABC):
@@ -29,15 +32,15 @@ class Model(ABC):
     @abstractmethod
     def get_buyers_probabilities(
         self,
-        fabrics: list[fabric.Fabric],
-    ) -> list[fabric.Fabric]:
+        fabrics: abc.Sequence[fabric.PredictionFabric],
+    ) -> list[fabric.PredictedFabric]:
         raise NotImplementedError
 
     @abstractmethod
     def report_buyers_status(
         self,
-        fabrics: list[fabric.Fabric],
-    ) -> list[fabric.Fabric]:
+        fabrics: abc.Sequence[fabric.TrainingFabric],
+    ) -> None:
         raise NotImplementedError
 
     def dump(self, fp: typing.BinaryIO) -> None:
@@ -56,21 +59,23 @@ class NullModel(Model):
 
     def get_buyers_probabilities(
         self,
-        fabrics: list[fabric.Fabric],
-    ) -> list[fabric.Fabric]:
+        fabrics: abc.Sequence[fabric.PredictionFabric],
+    ) -> list[fabric.PredictedFabric]:
         prediction = fabric.Prediction(
             exploration_rate=0.2, training_rate=0.2, tailor_id=uuid.uuid4()
         )
-        return [f.model_copy(update=dict(prediction=prediction)) for f in fabrics]
+        return [
+            fabric.PredictedFabric(feature_map=f.feature_map, prediction=prediction)
+            for f in fabrics
+        ]
 
     def report_buyers_status(
         self,
-        fabrics: list[fabric.Fabric],
-    ) -> list[fabric.Fabric]:
+        fabrics: abc.Sequence[fabric.TrainingFabric],
+    ) -> None:
         if not fabric.should_report(fabrics):
             raise UnexpectedReport(fabrics=fabrics)
         self._logger.debug([f.feature_map.root for f in fabrics[:1]])
-        return fabrics
 
 
 ENTRY_POINTS_GROUP = "greenbids-tailor-models"
