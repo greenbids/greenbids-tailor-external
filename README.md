@@ -41,7 +41,7 @@ Supposing that you have successfully launched a running server locally (it's acc
 
 ```bash
 # Connectivity check
-curl http://loculhost:8000/ping
+curl http://localhost:8000/ping
 # Simple liveness probe
 curl http://localhost:8000/healthz/liveness
 # Empty throttling request
