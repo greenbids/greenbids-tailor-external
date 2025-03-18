@@ -4,7 +4,7 @@ import logging
 from importlib.metadata import distribution
 
 from fastapi import FastAPI
-from greenbids.tailor.core import telemetry, logging_ as gb_logging
+from greenbids.tailor.core import _version, telemetry, logging_ as gb_logging
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from . import profiler, resources, tasks, exceptions
@@ -18,12 +18,35 @@ async def _lifespan(app: FastAPI):
     if resources.get_instance.cache_info().currsize > 0:
         _logger.warning("A resource object was initialized before app startup")
     app_resources = resources.get_instance()
+    _setup_telemetry()
     await tasks.repeat_every(
         seconds=app_resources.gb_model_refresh_period.total_seconds(),
         logger=_logger.getChild("model_reload"),
     )(app_resources.refresh_model)()
     with profiler.profile():
         yield
+
+
+def _setup_telemetry():
+    from opentelemetry.metrics import CallbackOptions, Observation
+
+    meter = telemetry.meter_provider.get_meter(
+        "greenbids.tailor", version=_version.version
+    )
+
+    def uptime_cb(options: CallbackOptions) -> list[Observation]:
+        app_res = resources.get_instance()
+        return [
+            Observation(
+                app_res.uptime_second,
+                {
+                    k: str(v)
+                    for k, v in app_res.model_dump(exclude={"uptime_second"}).items()
+                },
+            )
+        ]
+
+    meter.create_observable_gauge("greenbids.tailor.uptime", (uptime_cb,), unit="s")
 
 
 def _setup_logging():
