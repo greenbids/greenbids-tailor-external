@@ -82,7 +82,7 @@ class AppResources(pydantic.BaseModel):
             try:
                 rsp = requests.get(
                     settings.authenticated_index_url.geturl()
-                    + f"/{self.gb_model_name}_command.json"
+                    + f"/_commands/{settings.api_user}-{self.gb_model_name}.json"
                 ).json()
                 if datetime.datetime.fromisoformat(rsp["ts"]) < self.start:
                     return
