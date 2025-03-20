@@ -1,12 +1,14 @@
 import datetime
 import functools
+import io
 import logging
 import os
 import time
-import io
 
 import pydantic
+import requests
 from greenbids.tailor.core import models, version
+from greenbids.tailor.core.settings import settings
 
 _logger = logging.getLogger(__name__)
 
@@ -37,7 +39,7 @@ class AppResources(pydantic.BaseModel):
         default_factory=lambda: str(os.environ.get("GREENBIDS_TAILOR_MODEL_NAME"))
     )
     gb_model_refresh_period: datetime.timedelta = pydantic.Field(
-        default_factory=_default_refresh_period
+        default_factory=lambda: settings.gb_model_refresh_period
     )
     start: datetime.datetime = pydantic.Field(
         default_factory=lambda: datetime.datetime.now(datetime.timezone.utc)
@@ -76,6 +78,18 @@ class AppResources(pydantic.BaseModel):
         return self._gb_model is not None
 
     def refresh_model(self) -> None:
+        if self._gb_model is not None:
+            try:
+                rsp = requests.get(
+                    settings.authenticated_index_url.geturl()
+                    + f"/{self.gb_model_name}_command.json"
+                ).json()
+                if datetime.datetime.fromisoformat(rsp["ts"]) < self.start:
+                    return
+            except Exception:
+                _logger.debug("Fail to check model commands", exc_info=True)
+                return
+
         kwargs = {}
         try:
             buf = io.BytesIO()

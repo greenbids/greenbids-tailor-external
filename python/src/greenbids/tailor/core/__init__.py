@@ -7,7 +7,7 @@ except ImportError:
     version = "0.0.0"
     version_tuple = (0, 0, 0)
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger("greenbids.tailor")
 LOGGER.addHandler(logging.NullHandler())
 LOGGER.setLevel(os.environ.get("GREENBIDS_TAILOR_LOG_LEVEL", "INFO").upper())
 
