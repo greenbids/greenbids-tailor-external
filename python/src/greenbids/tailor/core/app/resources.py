@@ -13,19 +13,6 @@ from greenbids.tailor.core.settings import settings
 _logger = logging.getLogger(__name__)
 
 
-def _default_refresh_period() -> datetime.timedelta:
-    return (
-        datetime.timedelta(seconds=float(seconds))
-        if (
-            seconds := os.environ.get(
-                "GREENBIDS_TAILOR_MODEL_REFRESH_SECONDS",
-            )
-        )
-        is not None
-        else datetime.timedelta.max
-    )
-
-
 class ModelNotReady(AttributeError):
     def __init__(self, *args: object, model_name: str, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -49,6 +36,11 @@ class AppResources(pydantic.BaseModel):
     )
     _start_monotonic: float = pydantic.PrivateAttr(default_factory=time.monotonic)
     _gb_model: models.Model | None = None
+    _last_refresh: datetime.datetime = pydantic.PrivateAttr(
+        default_factory=lambda: datetime.datetime.min.replace(
+            tzinfo=datetime.timezone.utc
+        )
+    )
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -84,7 +76,8 @@ class AppResources(pydantic.BaseModel):
                     settings.authenticated_index_url.geturl()
                     + f"/_commands/{settings.api_user}-{self.gb_model_name}.json"
                 ).json()
-                if datetime.datetime.fromisoformat(rsp["ts"]) < self.start:
+                if datetime.datetime.fromisoformat(rsp["ts"]) < self._last_refresh:
+                    _logger.debug("Model already refreshed on %s", self._last_refresh)
                     return
             except Exception:
                 _logger.debug("Fail to check model commands", exc_info=True)
@@ -99,6 +92,7 @@ class AppResources(pydantic.BaseModel):
         except ModelNotReady:
             pass
         self._gb_model = models.load(self.gb_model_name, **kwargs)
+        self._last_refresh = datetime.datetime.now(datetime.timezone.utc)
         _logger.info("Model %s loaded", self.gb_model_name)
 
 
