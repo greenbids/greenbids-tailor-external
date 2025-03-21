@@ -10,6 +10,8 @@ from _utils import AdRequestFactory
 class Rtb(locust.FastHttpUser):
     """Traffic shaping testing."""
 
+    wait_time = locust.constant_throughput(100)
+
     @locust.task
     def handleAdRequest(self):
         """Here we simulate the way an SSP may integrate with the Greenbids Tailor service."""
