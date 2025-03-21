@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "greenbids-tailor-models-test"
+version = "0.1.0"
+dependencies = ["greenbids-tailor"]
+requires-python = ">=3.12"
+authors = [{ name = "greenbids.ai" }]
+description = "Greenbids Tailor model for test"
+keywords = ["traffic shaping", "adtech", "openrtb"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+]
+
+[project.urls]
+Repository = "https://github.com/greenbids/greenbids-tailor-models.git"
+
+[project.entry-points.greenbids-tailor-models]
+test = 'greenbids.tailor.models.test'
+
+[tool.hatch.build]
+packages = ["src/greenbids"]
+[tool.hatch.build.targets.custom]
+path = "../_scripts/pyc_builder.py"
+
+[tool.hatch.build.hooks.version]
+path = "src/greenbids/tailor/models/test/_version.py"

@@ -5,6 +5,7 @@ import pickle
 import subprocess
 import typing
 import uuid
+import sys
 from abc import ABC, abstractmethod
 from importlib import metadata
 from urllib.parse import urlsplit
@@ -86,11 +87,11 @@ def load(gb_model_name: str, **kwargs):
         _download(gb_model_name)
         importlib.invalidate_caches()
 
-    return (
-        metadata.entry_points(group=ENTRY_POINTS_GROUP)[gb_model_name.split("=")[0]]
-        .load()
-        .get_instance(**kwargs)
-    )
+    ep = metadata.entry_points(group=ENTRY_POINTS_GROUP)[gb_model_name.split("=")[0]]
+    for name in {m for m in sys.modules if str(m).startswith(ep.value)}:
+        del sys.modules[name]
+    mod = ep.load()
+    return mod.get_instance(**kwargs)
 
 _download_lock = FileLock("/tmp/greenbids-tailor-download.lock")
 def _download(target: str):
