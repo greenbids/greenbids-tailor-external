@@ -23,10 +23,10 @@ class Rtb(locust.FastHttpUser):
                 "featureMap": {
                     "bidder": bidder["name"],
                     "hasUserId": bidder.get("user_id") is not None,
-                    "publisherId": ad_request["hostname"],
+                    # "publisherId": ad_request["hostname"],
                     "deviceType": ad_request["device"],
                     "country": ad_request["country"],
-                    "ua": ad_request["user_agent"],
+                    # "ua": ad_request["user_agent"],
                     # You may add whatever seems relevant to you here.
                     "SSP's_secret_ingredient": 42,
                     # Let's get in touch to allow us to craft a well suited model.
