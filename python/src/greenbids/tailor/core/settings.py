@@ -1,5 +1,6 @@
 import datetime
 import urllib.parse
+import tempfile
 
 import pydantic
 import pydantic_settings
@@ -18,6 +19,8 @@ class Settings(pydantic_settings.BaseSettings):
         default=3600, alias="GREENBIDS_TAILOR_MODEL_REFRESH_SECONDS"
     )
     """Period between two model refresh check"""
+    data_directory: str = pydantic.Field(default_factory=lambda: tempfile.gettempdir())
+    """Path to the directory storing model dumps"""
 
     @property
     def authenticated_index_url(self) -> urllib.parse.SplitResult:
