@@ -1,6 +1,6 @@
 import locust
 
-from _utils import AdRequestFactory
+from greenbids.tailor.load_testing._utils import AdRequestFactory
 
 
 class Root(locust.FastHttpUser):

@@ -35,7 +35,7 @@ class BidderFactory(polyfactory.factories.TypedDictFactory[Bidder]):
     __set_as_default_factory_for_type__ = True
     _names = [
         polyfactory.factories.TypedDictFactory.__faker__.unique.company()
-        for _ in range(20)
+        for _ in range(100)
     ]
 
     @classmethod
@@ -47,17 +47,20 @@ class AdRequestFactory(polyfactory.factories.TypedDictFactory[AdRequest]):
     """Utility object to generate random AdRequests"""
 
     __randomize_collection_length__ = True
-    __min_collection_length__ = 2
+    __min_collection_length__ = 1
     """Minimal number of bidders"""
-    __max_collection_length__ = 15
+    __max_collection_length__ = 8
     """Maximal number of bidders"""
 
     _hostnames = [
         polyfactory.factories.TypedDictFactory.__faker__.unique.hostname()
-        for _ in range(100)
+        for _ in range(1000)
     ]
     _devices = ["smartphone", "desktop", "tablet", "ctv"]
-    _countries = ["AU", "CA", "CN", "DE", "ES", "FR", "IT", "JP", "UK", "US"]
+    _countries = [
+        polyfactory.factories.TypedDictFactory.__faker__.unique.country_code()
+        for _ in range(50)
+    ]
 
     user_agent = polyfactory.factories.TypedDictFactory.__faker__.user_agent
 

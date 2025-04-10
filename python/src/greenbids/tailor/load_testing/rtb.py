@@ -1,16 +1,38 @@
 import json
 import hashlib
 import random
+import typing
 
 import locust
 
-from _utils import AdRequestFactory
+from greenbids.tailor.load_testing._utils import AdRequestFactory, AdRequest
+
+
+class Fabric(typing.TypedDict):
+    featureMap: dict[str, str | float | int | bool]
 
 
 class Rtb(locust.FastHttpUser):
     """Traffic shaping testing."""
 
     wait_time = locust.constant_throughput(100)
+
+    @staticmethod
+    def _build_payload(ad_request: AdRequest) -> list[Fabric]:
+        return [
+            {
+                "featureMap": {
+                    "bidder": bidder["name"],
+                    "hasUserId": bidder.get("user_id") is not None,
+                    "deviceType": ad_request["device"],
+                    "country": ad_request["country"],
+                    # You may add whatever seems relevant to you here.
+                    "SSP's_secret_ingredient": 42,
+                    # Let's get in touch to allow us to craft a well suited model.
+                }
+            }
+            for bidder in ad_request["bidders"]
+        ]
 
     @locust.task
     def handleAdRequest(self):
@@ -20,26 +42,12 @@ class Rtb(locust.FastHttpUser):
         ad_request = AdRequestFactory.build()
 
         # Build a list of features for each bidder in the ad request
-        feature_maps = [
-            {
-                "featureMap": {
-                    "bidder": bidder["name"],
-                    "hasUserId": bidder.get("user_id") is not None,
-                    # "publisherId": ad_request["hostname"],
-                    "deviceType": ad_request["device"],
-                    "country": ad_request["country"],
-                    # "ua": ad_request["user_agent"],
-                    # You may add whatever seems relevant to you here.
-                    "SSP's_secret_ingredient": 42,
-                    # Let's get in touch to allow us to craft a well suited model.
-                }
-            }
-            for bidder in ad_request["bidders"]
-        ]
-        # Do a single PUT call containing the whole feature_maps list to the Greenbids Tailor service
-        # The returned `fabrics` variable contains the list of features_maps with the associated predictions:
+        fabrics = self._build_payload(ad_request)
+
+        # Do a single PUT call containing the whole list of fabrics to the Greenbids Tailor service
+        # The returned `fabrics` variable contains the request list with the associated predictions:
         # [{"featureMap": {...}, "prediction": {...}}, {"featureMap": {...}, prediction: {...}}, ...]
-        fabrics = self.client.put("", json=feature_maps).json()
+        fabrics = self.client.put("", json=fabrics).json()
 
         # Do your regular calls here to send a bid requests to the selected bidders
         for fabric in fabrics:

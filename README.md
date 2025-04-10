@@ -126,7 +126,7 @@ sequenceDiagram
 
 ### 🏋️ Example
 
-An integration example is provided through the [`locustfiles/rtb.py`](https://github.com/greenbids/greenbids-tailor-external/blob/main/locustfiles/rtb.py#L8).
+An integration example is provided through [`python/src/greenbids/tailor/load_testing/rtb.py`](https://github.com/greenbids/greenbids-tailor-external/blob/main/locustfiles/rtb.py#L8).
 It highlights when the Greenbids Tailor service must be called during the ad request processing.
 It also propose an example of features to pass in the payload (only for demonstrative purpose).
 
@@ -134,9 +134,9 @@ It also propose an example of features to pass in the payload (only for demonstr
 
 ```bash
 # Install the required dependencies
-pip install -r locustfiles/requirements.txt
+pip install './python[load-testing]'
 # Start load testing job
-locust --headless -f locustfiles --processes -1 --users 17 --spawn-rate 4 -H http://localhost:8000
+locust --headless -f ./python/src/greenbids/tailor/load_testing --processes -1 --users 17 --spawn-rate 4 -H http://localhost:8000
 ```
 
 Abort it when you want, pressing `Ctrl+C`.

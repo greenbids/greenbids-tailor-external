@@ -26,6 +26,12 @@ classifiers = [
     "Programming Language :: Python",
 ]
 
+[project.optional-dependencies]
+load-testing = [
+    "locust",
+    "polyfactory",
+]
+
 [project.urls]
 Repository = "https://github.com/greenbids/greenbids-tailor-external.git"
 
