@@ -126,7 +126,7 @@ sequenceDiagram
 
 ### 🏋️ Example
 
-An integration example is provided through [`python/src/greenbids/tailor/load_testing/rtb.py`](https://github.com/greenbids/greenbids-tailor-external/blob/main/locustfiles/rtb.py#L8).
+An integration example is provided through [`python/src/greenbids/tailor/load_testing/rtb.py`](https://github.com/greenbids/greenbids-tailor-external/blob/main/python/src/greenbids/tailor/load_testing/rtb.py#L38).
 It highlights when the Greenbids Tailor service must be called during the ad request processing.
 It also propose an example of features to pass in the payload (only for demonstrative purpose).
 
