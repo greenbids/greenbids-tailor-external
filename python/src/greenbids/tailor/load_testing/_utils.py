@@ -1,3 +1,4 @@
+import datetime
 import typing
 
 import polyfactory
@@ -33,6 +34,9 @@ class AdRequest(typing.TypedDict):
 
 class BidderFactory(polyfactory.factories.TypedDictFactory[Bidder]):
     __set_as_default_factory_for_type__ = True
+    polyfactory.factories.TypedDictFactory.__faker__.seed_instance(
+        datetime.datetime.now(datetime.timezone.utc).hour
+    )
     _names = [
         polyfactory.factories.TypedDictFactory.__faker__.unique.company()
         for _ in range(100)
@@ -45,6 +49,9 @@ class BidderFactory(polyfactory.factories.TypedDictFactory[Bidder]):
 
 class AdRequestFactory(polyfactory.factories.TypedDictFactory[AdRequest]):
     """Utility object to generate random AdRequests"""
+    polyfactory.factories.TypedDictFactory.__faker__.seed_instance(
+        datetime.datetime.now(datetime.timezone.utc).hour
+    )
 
     __randomize_collection_length__ = True
     __min_collection_length__ = 1
