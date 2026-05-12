@@ -35,8 +35,14 @@ spec:
           envFrom:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.env }}
           env:
+          {{- if .Values.otelExporterPrometheus.enabled }}
+            - name: OTEL_EXPORTER_PROMETHEUS_ENABLED
+              value: true
+            - name: OTEL_EXPORTER_PROMETHEUS_PORT
+              value: {{ .Values.otelExporterPrometheus.targetPort }}
+          {{- end }}
+          {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
           ports:
