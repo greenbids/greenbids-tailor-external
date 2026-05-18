@@ -36,12 +36,10 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           env:
-          {{- if .Values.otelExporterPrometheus.enabled }}
             - name: OTEL_EXPORTER_PROMETHEUS_ENABLED
-              value: true
+              value: {{ .Values.otelExporterPrometheus.enabled | quote }}
             - name: OTEL_EXPORTER_PROMETHEUS_PORT
-              value: {{ .Values.otelExporterPrometheus.targetPort }}
-          {{- end }}
+              value: {{ .Values.otelExporterPrometheus.targetPort | quote }}
           {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -49,6 +47,11 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+            {{- if .Values.otelExporterPrometheus.enabled }}
+            - name: prom
+              containerPort: {{ .Values.otelExporterPrometheus.port }}
+              protocol: TCP
+            {{- end }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
