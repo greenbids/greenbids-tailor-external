@@ -39,7 +39,7 @@ RESOURCE = resources.Resource.create(
 
 _OTLP_METRICS_READER = PeriodicExportingMetricReader(OTLPMetricExporter())
 metric_readers: list[MetricReader] = [_OTLP_METRICS_READER]
-if os.environ.get("OTEL_EXPORTER_PROMETHEUS_ENABLED"):
+if str(os.environ.get("OTEL_EXPORTER_PROMETHEUS_ENABLED"))[0].upper() in {"1", "T"}:
     default_port = int(os.environ.get("OTEL_EXPORTER_PROMETHEUS_PORT", 9464))
     exc = None
     for port in range(default_port, default_port + 128):

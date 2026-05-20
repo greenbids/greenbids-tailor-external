@@ -31,13 +31,27 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.envFrom }}
           envFrom:
-          - configMapRef:
-              name: {{ include "greenbids-tailor.fullname" . }}-envs
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            - name: OTEL_EXPORTER_PROMETHEUS_ENABLED
+              value: {{ .Values.otelExporterPrometheus.enabled | quote }}
+            - name: OTEL_EXPORTER_PROMETHEUS_PORT
+              value: {{ .Values.otelExporterPrometheus.targetPort | quote }}
+          {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+            {{- if .Values.otelExporterPrometheus.enabled }}
+            - name: prom
+              containerPort: {{ .Values.otelExporterPrometheus.port }}
+              protocol: TCP
+            {{- end }}
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:

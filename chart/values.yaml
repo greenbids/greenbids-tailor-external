@@ -82,4 +82,12 @@ tolerations: []
 affinity: {}
 
 env:
-  WEB_CONCURRENCY: 1
+  - name: WEB_CONCURRENCY
+    value: "1"
+
+envFrom: []
+
+otelExporterPrometheus:
+  enabled: false
+  port: 9464
+  targetPort: 9464
