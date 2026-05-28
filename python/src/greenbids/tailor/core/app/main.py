@@ -26,6 +26,8 @@ async def _lifespan(app: FastAPI):
     with profiler.profile():
         yield
 
+    app_resources.save_model()
+
 
 def _setup_telemetry():
     from opentelemetry.metrics import CallbackOptions, Observation
