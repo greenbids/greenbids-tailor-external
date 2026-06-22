@@ -20,8 +20,8 @@ router = APIRouter(tags=["Main"])
 
 @router.put("/")
 async def get_buyers_probabilities(
-    fabrics: list[fabric.Fabric],
-) -> list[fabric.Fabric]:
+    fabrics: list[fabric.PredictionFabric],
+) -> list[fabric.PredictedFabric]:
     """Compute the probability of the buyers to provide a bid.
 
     This must be called for each adcall.
@@ -29,8 +29,12 @@ async def get_buyers_probabilities(
     The prediction attribute will be populated in the returned response.
     """
     _request_size.record(len(fabrics), {"http.request.method": "PUT"})
+
     res = resources.get_instance().gb_model.get_buyers_probabilities(fabrics)
-    is_exploration_label = next(iter(res), fabric.Fabric()).prediction.is_exploration
+
+    is_exploration_label = next(
+        iter(res), fabric.PredictedFabric()
+    ).prediction.is_exploration
     for should_send, count in (
         {True: 0, False: 0} | Counter(f.prediction.should_send for f in res)
     ).items():
@@ -45,10 +49,10 @@ async def get_buyers_probabilities(
     return res
 
 
-@router.post("/")
+@router.post("/", status_code=204)
 async def report_buyers_status(
-    fabrics: list[fabric.Fabric],
-) -> list[fabric.Fabric]:
+    fabrics: list[fabric.TrainingFabric],
+) -> None:
     """Train model according to actual outcome.
 
     This must NOT be called for each adcall, but only for exploration ones.

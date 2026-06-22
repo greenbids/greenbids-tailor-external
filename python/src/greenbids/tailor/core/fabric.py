@@ -1,4 +1,4 @@
-import typing
+from collections import abc
 import uuid
 
 import pydantic
@@ -10,14 +10,20 @@ class _CamelSerialized(pydantic.BaseModel):
         alias_generator=pydantic.alias_generators.to_camel,
         populate_by_name=True,
         use_attribute_docstrings=True,
+        extra="ignore",
     )
 
 
-class FeatureMap(_CamelSerialized, pydantic.RootModel):
+class FeatureMap(pydantic.RootModel):
     """Mapping describing the current opportunity."""
     root: dict[str, bool | int | float | bytes | str] = pydantic.Field(
         default_factory=dict
     )
+
+
+class WithFeatureMap(_CamelSerialized):
+    feature_map: FeatureMap = pydantic.Field(default_factory=FeatureMap)
+
 
 class Prediction(_CamelSerialized):
     """Result of the shaping process."""
@@ -64,28 +70,39 @@ class Prediction(_CamelSerialized):
         return self.is_exploration or (self.score >= self.threshold)
 
 
+class WithPrediction(_CamelSerialized):
+    prediction: Prediction = pydantic.Field(default_factory=Prediction)
+
+
 class GroundTruth(_CamelSerialized):
     """Actual outcome of the opportunity"""
     has_response: bool = True
     """Did this opportunity lead to a valid buyer response?"""
 
 
-class Fabric(_CamelSerialized):
-    """Main entity used to tailor the traffic.
-
-    All fields are optional when irrelevant.
-    """
+class PredictionFabric(_CamelSerialized):
+    """Input for prediction requests"""
 
     feature_map: FeatureMap = pydantic.Field(default_factory=FeatureMap)
+
+
+class PredictedFabric(PredictionFabric):
+    """Output of prediction requests"""
+
     prediction: Prediction = pydantic.Field(default_factory=Prediction)
+
+
+class TrainingFabric(PredictedFabric):
+    """Input for training requests"""
+
     ground_truth: GroundTruth = pydantic.Field(default_factory=GroundTruth)
 
 
-def should_report(fabrics: list[Fabric]) -> bool:
+def should_report(fabrics: abc.Sequence[PredictedFabric]) -> bool:
     """Does a request should be sent to report endpoints.
 
     Returns `True` if **all (and at least one)** fabrics are exploration and training one, else `False`.
     """
-    return fabrics and all(
+    return bool(fabrics) and all(
         (f.prediction.is_exploration and f.prediction.is_training) for f in fabrics
     )
