@@ -62,7 +62,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Wait for package availability
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
         run: |2
           bash -sx <<EOT
           try=10
@@ -86,7 +86,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           build-args: |-
             PYTHON_VERSION=3.12
-            TAILOR_VERSION_SPEC=${{ github.event_name == 'push' && format('=={0}', inputs.app-version)  || '' }}
+            TAILOR_VERSION_SPEC=${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && format('=={0}', inputs.app-version)  || '' }}
             PIP_EXTRA_ARGS=${{
               github.ref_type != 'tag'
               && '--pre --index-url=https://test.pypi.org/simple --extra-index-url=https://pypi.org/simple'

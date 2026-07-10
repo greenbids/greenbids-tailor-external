@@ -31,6 +31,15 @@ CMD ["run"]
 ARG PIP_INDEX_URL="https://pypi.org/simple"
 ARG PIP_EXTRA_ARGS=""
 ARG TAILOR_VERSION_SPEC
-RUN pip3 --version && pip3 install --no-cache-dir ${PIP_EXTRA_ARGS} greenbids-tailor${TAILOR_VERSION_SPEC}
+RUN set -eux; \
+    pip3 --version; \
+    try=12; \
+    until pip3 install --no-cache-dir ${PIP_EXTRA_ARGS} greenbids-tailor${TAILOR_VERSION_SPEC}; do \
+        try=$((try - 1)); \
+        if [ "$try" -le 0 ]; then \
+            exit 1; \
+        fi; \
+        sleep 10; \
+    done
 
 USER greenbids
