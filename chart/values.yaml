@@ -30,6 +30,7 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 8000
+  annotations: {}
 
 ingress:
   enabled: false
