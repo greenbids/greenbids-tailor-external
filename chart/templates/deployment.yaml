@@ -40,6 +40,20 @@ spec:
               value: {{ .Values.otelExporterPrometheus.enabled | quote }}
             - name: OTEL_EXPORTER_PROMETHEUS_PORT
               value: {{ .Values.otelExporterPrometheus.targetPort | quote }}
+            {{- $headers := .Values.otel.exporterOtlpHeaders | default "" }}
+            {{- if .Values.otel.auth.enabled }}
+            {{- $auth := "Authorization=Bearer $(OTEL_AUTH_TOKEN)" }}
+            {{- $headers = ternary (printf "%s,%s" $headers $auth) $auth (ne $headers "") }}
+            - name: OTEL_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "otel.auth.secretName is required when otel.auth.enabled is true" .Values.otel.auth.secretName }}
+                  key: {{ .Values.otel.auth.secretKey | quote }}
+            {{- end }}
+            {{- if $headers }}
+            - name: OTEL_EXPORTER_OTLP_HEADERS
+              value: {{ $headers | quote }}
+            {{- end }}
           {{- with .Values.env }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
