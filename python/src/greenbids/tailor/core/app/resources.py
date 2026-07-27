@@ -56,6 +56,11 @@ class AppResources(pydantic.BaseModel):
 
     @pydantic.computed_field
     @property
+    def gb_model_version(self) -> str | None:
+        return self._gb_model.VERSION if self._gb_model else None
+
+    @pydantic.computed_field
+    @property
     def uptime_second(self) -> float:
         return time.monotonic() - self._start_monotonic
 

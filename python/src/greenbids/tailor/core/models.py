@@ -12,7 +12,7 @@ from urllib.parse import urlsplit
 
 from filelock import FileLock
 
-from greenbids.tailor.core import fabric
+from greenbids.tailor.core import fabric, version as core_version
 
 _logger = logging.getLogger(__name__)
 
@@ -26,6 +26,8 @@ class UnexpectedReport(ValueError):
 
 
 class Model(ABC):
+
+    VERSION: str = "unknown"
 
     @abstractmethod
     def get_buyers_probabilities(
@@ -51,6 +53,8 @@ class Model(ABC):
 
 class NullModel(Model):
     """Dummy model that never filter."""
+
+    VERSION: str = core_version
 
     def __init__(self):
         self._logger = _logger.getChild("null")
@@ -93,7 +97,10 @@ def load(gb_model_name: str, **kwargs):
     mod = ep.load()
     return mod.get_instance(**kwargs)
 
+
 _download_lock = FileLock("/tmp/greenbids-tailor-download.lock")
+
+
 def _download(target: str):
     """Download a model from private Python registry
 

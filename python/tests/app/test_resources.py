@@ -6,6 +6,15 @@ from greenbids.tailor.core.app import resources
 
 
 class TestResources(unittest.TestCase):
+    def test_should_fetch_model_version(self):
+        res = resources.AppResources()
+        res._gb_model = unittest.mock.Mock()
+        self.assertIs(res.gb_model_version, res._gb_model.VERSION)
+
+    def test_should_fallback__model_version_if_not_ready(self):
+        """If model is not ready, model version should fallback on None instead of raising an exception"""
+        res = resources.AppResources()
+        self.assertIsNone(res.gb_model_version)
 
     def test_should_refresh_none_model(self):
         with unittest.mock.patch(f"{resources.__name__}.models") as models_mock:
