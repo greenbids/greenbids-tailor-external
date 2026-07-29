@@ -21,6 +21,8 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.exporter.prometheus import PrometheusMetricReader
 import prometheus_client
 
+from greenbids.tailor.core.settings import settings
+
 
 from .logging_ import RateLimitingFilter
 from greenbids.tailor.core import version
@@ -29,9 +31,7 @@ _logger = logging.getLogger(__name__)
 
 RESOURCE = resources.Resource.create(
     {
-        resources.SERVICE_NAMESPACE: str(
-            os.environ.get("GREENBIDS_TAILOR_API_USER", "Unknown")
-        ),
+        resources.SERVICE_NAMESPACE: settings.api_user,
         resources.SERVICE_INSTANCE_ID: uuid.uuid1().hex,
         resources.SERVICE_VERSION: version,
     }

@@ -14,6 +14,12 @@ class Settings(pydantic_settings.BaseSettings):
     """Username used for authentication against Greenbids infrastructure"""
     api_key: str = ""
     """Password used for authentication against Greenbids infrastructure"""
+    download_disabled: bool = False
+    """Disable any model download"""
+    gb_model_name: str = pydantic.Field(
+        default=str(None), alias="GREENBIDS_TAILOR_MODEL_NAME"
+    )
+    """Name of the model to use"""
     gb_model_refresh_seconds: int = pydantic.Field(
         default=3600, alias="GREENBIDS_TAILOR_MODEL_REFRESH_SECONDS"
     )
