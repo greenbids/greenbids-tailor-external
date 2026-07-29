@@ -4,7 +4,6 @@ from fastapi import APIRouter
 from greenbids.tailor.core import fabric, telemetry, _version
 from .. import resources
 
-
 _meter = telemetry.meter_provider.get_meter(
     "greenbids.tailor", version=_version.version
 )
@@ -19,7 +18,7 @@ router = APIRouter(tags=["Main"])
 
 
 @router.put("/")
-async def get_buyers_probabilities(
+def get_buyers_probabilities(
     fabrics: list[fabric.Fabric],
 ) -> list[fabric.Fabric]:
     """Compute the probability of the buyers to provide a bid.
@@ -46,7 +45,7 @@ async def get_buyers_probabilities(
 
 
 @router.post("/")
-async def report_buyers_status(
+def report_buyers_status(
     fabrics: list[fabric.Fabric],
 ) -> list[fabric.Fabric]:
     """Train model according to actual outcome.
