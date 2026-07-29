@@ -22,9 +22,7 @@ class ModelNotReady(AttributeError):
 class AppResources(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
-    gb_model_name: str = pydantic.Field(
-        default_factory=lambda: str(os.environ.get("GREENBIDS_TAILOR_MODEL_NAME"))
-    )
+    gb_model_name: str = pydantic.Field(default_factory=lambda: settings.gb_model_name)
     gb_model_refresh_period: datetime.timedelta = pydantic.Field(
         default_factory=lambda: settings.gb_model_refresh_period
     )
