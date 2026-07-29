@@ -92,3 +92,16 @@ otelExporterPrometheus:
   enabled: false
   port: 9464
   targetPort: 9464
+
+otel:
+  # Base OTLP headers sent with every export (comma-separated key=value pairs).
+  # Mirrors the image default; leave empty to fall back to the image's value.
+  exporterOtlpHeaders: "Greenbids-Tailor=true"
+  auth:
+    # When enabled, a bearer token is read from an existing Secret and appended
+    # to OTEL_EXPORTER_OTLP_HEADERS as `Authorization=Bearer <token>`.
+    enabled: false
+    # Name of an existing Secret holding the token (required when enabled).
+    secretName: ""
+    # Key within the Secret that contains the raw token value.
+    secretKey: token

@@ -67,6 +67,7 @@ Some environment variables may be used to change the default configuration of th
 | OTEL_EXPORTER_PROMETHEUS_PORT    | Port on which to expose Prometheus metrics                                            | 9464                                   |
 | OTEL_TRACES_SAMPLER              | Telemetry traces sampling strategy                                                    | parentbased_traceidratio in containers |
 | OTEL_TRACES_SAMPLER_ARG          | Telemetry traces sampling                                                             | 1, 0.0001 in containers                |
+| OTEL_EXPORTER_OTLP_HEADERS       | HTTP headers sent with every OTLP export (comma-separated `key=value`). Use it to authenticate against a protected collector, e.g. `Authorization=Bearer <token>` | `Greenbids-Tailor=true` in containers  |
 
 ## 🍱 Integration
 
