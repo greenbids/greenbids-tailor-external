@@ -6,31 +6,28 @@ build-backend = "hatchling.build"
 dynamic = ["version"]
 name = "greenbids-tailor"
 dependencies = [
-    "fastapi[standard]~=0.111",
-    "opentelemetry-api~=1.25",
-    "opentelemetry-sdk~=1.25",
-    "opentelemetry-exporter-otlp-proto-http~=1.25",
-    "opentelemetry-exporter-prometheus~=0.48b0",
-    "opentelemetry-instrumentation-fastapi~=0.46b0",
-    "filelock~=3.16",
-    "pydantic-settings~=2.8"
+  "fastapi[standard]~=0.111",
+  "opentelemetry-api~=1.25",
+  "opentelemetry-sdk~=1.25",
+  "opentelemetry-exporter-otlp-proto-http~=1.25",
+  "opentelemetry-exporter-prometheus~=0.48b0",
+  "opentelemetry-instrumentation-fastapi~=0.46b0",
+  "filelock~=3.16",
+  "pydantic-settings~=2.8",
 ]
 requires-python = ">=3.11"
 authors = [{ name = "greenbids.ai" }]
 description = "Bring traffic shaping to your own cloud"
-readme = "../README.md"
+readme = "./README.md"
 license = { file = "../LICENSE" }
 keywords = ["traffic shaping", "adtech", "openrtb"]
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Programming Language :: Python",
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
 ]
 
 [project.optional-dependencies]
-load-testing = [
-    "locust",
-    "polyfactory",
-]
+load-testing = ["locust", "polyfactory"]
 
 [project.urls]
 Repository = "https://github.com/greenbids/greenbids-tailor-external.git"
