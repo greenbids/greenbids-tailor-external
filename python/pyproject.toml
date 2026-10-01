@@ -14,6 +14,7 @@ dependencies = [
   "opentelemetry-instrumentation-fastapi~=0.46b0",
   "filelock~=3.16",
   "pydantic-settings~=2.8",
+  "requests~=2.34",
 ]
 requires-python = ">=3.11"
 authors = [{ name = "greenbids.ai" }]
